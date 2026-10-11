@@ -1,3 +1,5 @@
+import re
+
 class Validators:
 
     @staticmethod
@@ -5,19 +7,13 @@ class Validators:
 
         if not isinstance(password, str):
             return False
-
-        special_sym = ['@', '&']
-
-        if not any(c.isalpha() for c in password):
+        
+        if len(password) < 3 :
             return False
         
-        if not any(c.isdigit() for c in password):
-            return False
+        pattern = r"^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@&]).+$"
 
-        if not any(c in special_sym for c in password):
-            return False
-
-        return True
+        return bool(re.match(pattern, password))
 
     @staticmethod
     def validate_email():
