@@ -2,6 +2,10 @@ class Validators:
 
     @staticmethod
     def validate_password(password: str):
+
+        if not isinstance(password, str):
+            return False
+
         special_sym = ['@', '&']
 
         if not any(c.isalpha() for c in password):
