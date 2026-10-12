@@ -1,6 +1,6 @@
-from pathlib import Path
+import os
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ROLE_ADMIN = "admin"
 ROLE_COACH = "coach"
@@ -19,7 +19,7 @@ SPORT_TYPES = ["Bodybuilding", "Yoga", "Fitness", "CrossFit", "Football"]
 DAYS_PER_MONTH = 30
 
 def data_dir():
-    return BASE_DIR / "data"
+    return os.path.join(BASE_DIR, "data")
 
 def data_path(filename):
-    return BASE_DIR / filename
+    return os.path.join(data_dir(), filename)
