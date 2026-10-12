@@ -80,6 +80,30 @@ class Validators:
 
         return bool(re.fullmatch(pattern, value))
 
+    @staticmethod
+    def positive_number_validate(value):
+
+        if isinstance(value, bool):
+            return False
+
+        if not isinstance(value, (int, float, str)):
+            return False
+
+        value = str(value)
+
+        pattern = r"^\d+(\.\d+)?$"
+
+        return bool(re.fullmatch(pattern, value))
+
+    @staticmethod
+    def time_validate(time_str:str):
+
+        if not isinstance(time_str, str):
+            return False
+
+        pattern = r"^([01]\d|2[0-3]):[0-5]\d$"
+
+        return bool(re.fullmatch(pattern, time_str))
     
 
     
