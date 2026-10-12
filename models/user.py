@@ -10,15 +10,38 @@ class User:
 
     def to_dict(self):
         return {
-            
-        }
-        pass
+            "name":self.name ,
+            "username":self.username,
+            "password":self.password,
+            "email":self.email,
+            "is_active":self.is_active,
+            "role":self.role
+            }
+        
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            name = data["name"],
+            username = data["username"],
+            password = data["password"],
+            email = data["email"],
+            is_active = data.get("is_active", True),
+        )
+
+
 
 class Admin(User):
-    pass
+    def __init__(self, name, username, password, email, is_active=True):
+        return super().__init__(name, username, password, email, is_active, role="admin")
+    
 
 class Coach(User):
-    pass
+    def __init__(self, name, username, password, email, is_active=True):
+        return super().__init__(name, username, password, email, is_active, role="coach")
+    
 
 class Member(User):
-    pass
+    def __init__(self, name, username, password, email, is_active=True,subscription_status="بدون اشتراک", subscription_start=None,
+                 subscription_end=None, registered_classes=None,):
+        return super().__init__(name, username, password, email, is_active,subscription_status="بدون اشتراک", subscription_start=None,
+                 subscription_end=None, registered_classes=None, role="member")
