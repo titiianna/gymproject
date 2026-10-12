@@ -31,7 +31,7 @@ class Validators:
         if not isinstance(username, str):
             return False
 
-        pattern = r"^[a-zA-z0-9_]{3,20}$"
+        pattern = r"^[a-zA-Z0-9_]{3,20}$"
 
         return bool(re.match(pattern, username))
 
@@ -39,6 +39,16 @@ class Validators:
     def unique_username_validate(username: str, users_existing: list | dict):
 
         return username not in users_existing
+
+    @staticmethod
+    def name_validate(name: str):
+
+        if not isinstance(name, str):
+            return False
+
+        pattern = r"^[a-zA-Z\u0621-\u06CC]+(?: [u200c\ ]+[a-zA-Z\u0621-\u06CC])*"
+
+        return bool(re.match(pattern, name))
 
     
         
