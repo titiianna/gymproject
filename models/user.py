@@ -45,3 +45,4 @@ class Member(User):
                  subscription_end=None, registered_classes=None,):
         return super().__init__(name, username, password, email, is_active,subscription_status="بدون اشتراک", subscription_start=None,
                  subscription_end=None, registered_classes=None, role="member")
+
