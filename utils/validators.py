@@ -21,7 +21,7 @@ class Validators:
         if not isinstance(email, str):
             return False
         
-        pattern = r"^[a-zA-Z0-9._+-]+@(gmail\.com|yahoo\.com|outlook\.com|[a-zA-Z0-9.-]+\.ac\.ir)"
+        pattern = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 
         return bool(re.match(pattern, email))
 
