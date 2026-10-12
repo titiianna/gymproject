@@ -12,5 +12,11 @@ class AuthService:
         if account_type!= account.account_type:
             return False ,"invalid account type", None
 
+        if  not account.is_active:
+            return False , "account is inactive" , None
+        return True ,"login successful" , account 
+ 
+        
+
         
         
