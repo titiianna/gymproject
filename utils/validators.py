@@ -46,7 +46,7 @@ class Validators:
         if not isinstance(name, str):
             return False
 
-        pattern = r"^[a-zA-Z\u0621-\u06CC]+(?: [u200c\ ]+[a-zA-Z\u0621-\u06CC])*"
+        pattern = r"^[a-zA-Z\u0621-\u06CC]+(?:[\u200c]+[a-zA-Z\u0621-\u06CC])*"
 
         return bool(re.fullmatch(pattern, name))
 
