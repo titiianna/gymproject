@@ -23,7 +23,7 @@ class Validators:
         
         pattern = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 
-        return bool(re.match(pattern, email))
+        return bool(re.fullmatch(pattern, email))
 
     @staticmethod
     def username_validate(username: str):
@@ -33,7 +33,7 @@ class Validators:
 
         pattern = r"^[a-zA-Z0-9_]{3,20}$"
 
-        return bool(re.match(pattern, username))
+        return bool(re.fullmatch(pattern, username))
 
     @staticmethod
     def unique_username_validate(username: str, users_existing: list | dict):
@@ -48,7 +48,29 @@ class Validators:
 
         pattern = r"^[a-zA-Z\u0621-\u06CC]+(?: [u200c\ ]+[a-zA-Z\u0621-\u06CC])*"
 
-        return bool(re.match(pattern, name))
+        return bool(re.fullmatch(pattern, name))
+
+    @staticmethod
+    def positive_int_validate(value: int | str):
+
+        if not isinstance(value, (int, str)):
+            return False
+
+        pattern = r"^[1-9]\d*$"
+
+        return bool(re.fullmatch(pattern, value))
+
+    @staticmethod
+    def non_negative_int_validate(value : int | str):
+
+        if not isinstance(value, (int, str)):
+            return False
+
+        pattern = r"^(0|[1-9]\d*)$"
+
+        return bool(re.fullmatch(pattern, value))
+
+    
 
     
         
