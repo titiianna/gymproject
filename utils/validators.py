@@ -25,7 +25,17 @@ class Validators:
 
         return bool(re.match(pattern, email))
 
-    
     @staticmethod
-    def validate_username_unique():
+    def username_validate(username: str):
+
+        if not isinstance(username, str):
+            return False
+
+        pattern = r"^[a-zA-z0-9_]{3,20}$"
+
+        return bool(re.match(pattern, username))
+
+    @staticmethod
+    def unique_username_validate(username, users_existing):
         pass
+        
