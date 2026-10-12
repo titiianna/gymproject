@@ -53,8 +53,13 @@ class Validators:
     @staticmethod
     def positive_int_validate(value: int | str):
 
+        if isinstance(value, bool):
+            return False
+
         if not isinstance(value, (int, str)):
             return False
+
+        value = str(value)
 
         pattern = r"^[1-9]\d*$"
 
@@ -63,8 +68,13 @@ class Validators:
     @staticmethod
     def non_negative_int_validate(value : int | str):
 
+        if isinstance(value, bool):
+            return False
+
         if not isinstance(value, (int, str)):
             return False
+
+        value = str(value)
 
         pattern = r"^(0|[1-9]\d*)$"
 
