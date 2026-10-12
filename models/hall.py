@@ -1,4 +1,6 @@
 class Hall:
-    def __init__(self):
+    def __init__(self,name,capacity,equipment=[],is_active=True):
         pass
-    pass
+
+    def to_dict(self):
+        pass
