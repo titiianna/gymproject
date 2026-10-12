@@ -104,7 +104,14 @@ class Validators:
         pattern = r"^([01]\d|2[0-3]):[0-5]\d$"
 
         return bool(re.fullmatch(pattern, time_str))
-    
+
+    @staticmethod
+    def day_validate(day):
+
+        if not isinstance(day, str):
+            return False
+
+        return day in constants.DAYS
 
     
         
