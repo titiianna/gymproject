@@ -36,6 +36,9 @@ class Validators:
         return bool(re.match(pattern, username))
 
     @staticmethod
-    def unique_username_validate(username, users_existing):
-        pass
+    def unique_username_validate(username: str, users_existing: list | dict):
+
+        return username not in users_existing
+
+    
         
