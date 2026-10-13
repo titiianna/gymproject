@@ -7,8 +7,8 @@ class Transaction:
         self.tracking_id=tracking_id
         
     def to_string_format(self):
-        string_format = f"{self.tx_type} | amount = {self.amount} | tx date = {date} | {self.description} | ti = {self.tracking_id} "
-        pass
+        return f"{self.tx_type} | amount = {self.amount} | date = {self.date} | {self.description} | id = {self.tracking_id}\n"
+        
 
     def to_dict(self):
         return {
@@ -26,9 +26,25 @@ class Wallet:
     def __init__(self,username,balance=0.0):
         self.username=username
         self.balance=balance
-        pass
-    def deposit(amount):
-        pass
-    def withdraw(amount):
-        return True
-    
+        
+    def deposit(self , amount):
+        if amount<= 0:
+            return False
+        else:
+            self.balance +=amount
+            return True
+
+
+        
+    def withdraw(self , amount):
+        if amount>self.balance or amount<=0:
+            return False
+        else:
+            self.balance -= amount
+            return True
+
+    def to_dict(self):
+        return{
+            "username":self.username,
+            "balance":self.balance
+        }
