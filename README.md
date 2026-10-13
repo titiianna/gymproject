@@ -1,3 +1,13 @@
+<p align="center">
+  <a href="quera.org/bootcamp/python-alpha-qbc13">
+    <img src="assets/banner.png"
+         alt="Gym Management System Banner"
+         width="100%">
+  </a>
+</p>
+
+---
+
 ## نمای کلی برنامه
 
 ```mermaid
