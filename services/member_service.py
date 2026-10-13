@@ -53,5 +53,15 @@ class MemberService:
             "subscription_status": getattr(user, 'subscription_status', '-')
         }
 
+    @staticmethod
+    def get_balance(username, wallets_dict):
 
+        wallet = wallets_dict.get(username)
+
+        if not wallet:
+            return 0.0
+
+        wallet_balance = getattr(wallet, 'balance', 0.0)
+
+        return wallet_balance
 
