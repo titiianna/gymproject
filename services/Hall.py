@@ -7,3 +7,9 @@ class AdminService:
 
     @staticmethod
     def add_hall(name, capacity, equipment, is_active, halls_dict):
+
+#بخش بررسی   نام سالن 
+     if not isinstance (name ,str ) :
+        return False, "invalid hall name "
+
+     
