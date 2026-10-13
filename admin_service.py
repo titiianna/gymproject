@@ -1,10 +1,10 @@
-import models .user 
-import models .wallet 
-import utils .validators
+import models.user 
+import models.wallet 
+import utils.validators
 
 class AdminService:
-    def add_user(self , role , name , username ,password , email , 
-                 is_active , user_dict wallet_dict ):
+    def add_user (self , role , name , username ,password , email , 
+                 is_active , user_dict ,wallets_dict ):
         user_roles = {"coach" , "member"}
 
         if role not in user_roles:
@@ -12,16 +12,19 @@ class AdminService:
     
 
 #بخش اعتبار سنجی اطلاعات کاربر 
+        if not isinstance(name ,str ):
+            return False , "invalid name provided"
+        name = name.strip()
 
-        if not utils.validators.validate_username(username):
+        if not utils.validators.username_validate(username):
             return False , "invalid username provided"
-        if not utils.validators.validate_name(name):
+        if not utils.validators.name_validate(name):
             return False , "invalid name provided"
         if username in user_dict:
-            return False , "username alredy exists"
-        if not utils.validators.validate_password(password):
+            return False , "username already exists"
+        if not utils.validators.password_validate(password):
             return False , "invalid password provided"
-        if not utils.validators.validate_email(email):
+        if not utils.validators.email_validate(email):
             return False , "invalid email provided"
         if not isinstance(is_active , bool):
             return False , "invalid active status provided"
@@ -29,8 +32,8 @@ class AdminService:
 #بخش انتخاب کلاس و ساخت کاربر
 
         user_classes = {
-            "coach " :models.user.coach , 
-            "member" : models.user.member
+            "coach" :models.user.Coach , 
+            "member" : models.user.Member
         }
 
         user_class= user_classes[role]
@@ -41,13 +44,12 @@ class AdminService:
             email ,
             is_active
         )
+#ساخت کیف پول و ذخیره کاربر
+        if role == "member":
+            wallets_dict.setdefault(
+                username , models.wallet.Wallet(username)
 
+            )  
         
-
-        
-        
-        
-        
-
-
-        
+        user_dict[username]= user
+        return True , "user added successfully"
