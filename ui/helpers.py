@@ -24,4 +24,18 @@ def ask(prompt, allow_empty=False):
             return value
         print("Input cannot be empty.")
 
+def pick(title, items, label):
+    if len(items) == 0:
+        print("Nothing to display.")
+        return None
 
+    names = []
+    for i in items:
+        names.append(label(i))
+    names.append("Back")
+
+    c = menu(title, names)
+
+    if c == len(names):
+        return None
+    return items[c - 1]
