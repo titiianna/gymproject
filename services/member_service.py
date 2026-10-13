@@ -22,11 +22,14 @@ def _record_transaction(tx, transaction_list):
 
     FileHandler.txt_append(data_path("transactions.txt"), line)
 
+#def _refresh_subscription_status():
+
+
 def _get_member(username, users_dict):
 
     user = users_dict.get(username)
 
-    if user and user.get('Role') == ROLE_MEMBER:
+    if user and getattr(user, 'role', None) == ROLE_MEMBER:
         return user
 
     return False
