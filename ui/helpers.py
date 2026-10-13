@@ -1,4 +1,4 @@
-from colors import bcolors
+from ui.colors import bcolors
 
 CANCEL = "/"
 
