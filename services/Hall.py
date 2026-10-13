@@ -12,4 +12,17 @@ class AdminService:
      if not isinstance (name ,str ) :
         return False, "invalid hall name "
 
+     name= name.strip()
+
+#بررسی خالی نبودن نام 
+     if not name :
+        return False , "hall name cannot be empty "
+
+#بررسی تکراری نبودن نام 
+     if name in halls_dict:
+        return False , "hall already exists "
+     
+
+     
+
      
