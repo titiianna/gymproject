@@ -51,7 +51,7 @@ class Member(User):
 
 
 
-def to_dict(self):
+    def to_dict(self):
         data = super().to_dict()
         data.update({
             "subscription_status": self.subscription_status,
