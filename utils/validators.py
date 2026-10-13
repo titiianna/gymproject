@@ -91,7 +91,7 @@ class Validators:
 
         value = str(value)
 
-        pattern = r"^\d+(\.\d+)?$"
+        pattern = r"^(?:[1-9]\d*(?:\.\d+)?|0\.\d*[1-9]\d*)$"
 
         return bool(re.fullmatch(pattern, value))
 
