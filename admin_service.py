@@ -25,7 +25,25 @@ class AdminService:
             return False , "invalid email provided"
         if not isinstance(is_active , bool):
             return False , "invalid active status provided"
+
+#بخش انتخاب کلاس و ساخت کاربر
+
+        user_classes = {
+            "coach " :models.user.coach , 
+            "member" : models.user.member
+        }
+
+        user_class= user_classes[role]
+        user= user_class(
+            name.strip(), 
+            username ,
+            password ,
+            email ,
+            is_active
+        )
+
         
+
         
         
         
