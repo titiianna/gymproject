@@ -2,25 +2,28 @@ from ui.colors import bcolors
 
 CANCEL = "/"
 
-
 def menu(title, items):
-    """Numbered menu; returns the chosen number (starting at 1)."""
     while True:
-        print(bcolors.OKGREEN+f"\n=== {title} ==="+bcolors.ENDC)
-        for i, item in enumerate(items, 1):
-            print(f"{i}. {item}")
-        raw = input(bcolors.OKGREEN+"➜ "+bcolors.ENDC+f"select[1-{len(items)}]: ").strip()
-        if raw.isdigit() and 1 <= int(raw) <= len(items):
-            return int(raw)
-        print(bcolors.FAIL+"Invalid option; try again."+bcolors.ENDC)
-
+        print(bcolors.OKGREEN + "\n=== " + title + " ===" + bcolors.ENDC)
+        i = 1
+        for item in items:
+            print(str(i) + ". " + item)
+            i = i + 1
+        raw = input(bcolors.OKGREEN + "➜ " + bcolors.ENDC + "select[1-" + str(len(items)) + "]: ").strip()
+        if raw.isdigit() == True:
+            num = int(raw)
+            if num >= 1 and num <= len(items):
+                return num
+        print(bcolors.FAIL + "Invalid option; try again." + bcolors.ENDC)
 
 def ask(prompt, allow_empty=False):
     while True:
-        value = input(f"{prompt} (cancel: {CANCEL}): ").strip()
+        value = input(prompt + " (cancel: " + CANCEL + "): ").strip()
         if value == CANCEL:
             return None
-        if value or allow_empty:
+        if value:
+            return value
+        if allow_empty:
             return value
         print("Input cannot be empty.")
 
@@ -39,3 +42,15 @@ def pick(title, items, label):
     if c == len(names):
         return None
     return items[c - 1]
+
+def show_table(headers, rows):
+    if len(rows) == 0:
+        print("Nothing to display.")
+        return
+    print(" | ".join(headers))
+    print("-" * 60)
+    for row in rows:
+        parts = []
+        for x in row:
+            parts.append(str(x))
+        print(" | ".join(parts))
