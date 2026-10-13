@@ -26,8 +26,8 @@ def _get_member(username, users_dict):
 
     user = users_dict.get(username)
 
-    if user and getattr(user, 'role', None) == ROLE_MEMBER:
-        return True
+    if user and user.get('Role') == ROLE_MEMBER:
+        return user
 
     return False
 
