@@ -1,9 +1,11 @@
 import re
+from utils import constants  
+
 
 class Validators:
 
     @staticmethod
-    def validate_password(password: str):
+    def validate_password(password):
 
         if not isinstance(password, str):
             return False
@@ -16,7 +18,7 @@ class Validators:
         return bool(re.match(pattern, password))
 
     @staticmethod
-    def validate_email(email: str):
+    def validate_email(email):
 
         if not isinstance(email, str):
             return False
@@ -26,7 +28,7 @@ class Validators:
         return bool(re.fullmatch(pattern, email))
 
     @staticmethod
-    def username_validate(username: str):
+    def username_validate(username):
 
         if not isinstance(username, str):
             return False
@@ -41,7 +43,7 @@ class Validators:
         return username not in users_existing
 
     @staticmethod
-    def name_validate(name: str):
+    def name_validate(name):
 
         if not isinstance(name, str):
             return False
@@ -51,7 +53,7 @@ class Validators:
         return bool(re.fullmatch(pattern, name))
 
     @staticmethod
-    def positive_int_validate(value: int | str):
+    def positive_int_validate(value):
 
         if isinstance(value, bool):
             return False
@@ -66,7 +68,7 @@ class Validators:
         return bool(re.fullmatch(pattern, value))
 
     @staticmethod
-    def non_negative_int_validate(value : int | str):
+    def non_negative_int_validate(value):
 
         if isinstance(value, bool):
             return False
@@ -96,7 +98,7 @@ class Validators:
         return bool(re.fullmatch(pattern, value))
 
     @staticmethod
-    def time_validate(time_str:str):
+    def time_validate(time_str):
 
         if not isinstance(time_str, str):
             return False
