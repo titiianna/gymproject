@@ -32,5 +32,26 @@ def _get_member(username, users_dict):
     return False
 
 
+class MemberService:
+
+    @staticmethod
+    def get_profile(username, users_dict):
+
+        user = _get_member(username, users_dict)
+
+        if not user:
+            return None
+
+        return {
+            "name": getattr(user, 'name', '-'),
+            "username": getattr(user, 'username', '-'),
+            "email": getattr(user, 'email', '-'),
+            "account_status": getattr(user, 'account_status', '-'),
+            "subscription_type": getattr(user, 'subscription_type', '-'),
+            "subscription_start": getattr(user, 'subscription_start', '-'),
+            "subscription_end": getattr(user, 'subscription_end', '-'),
+            "subscription_status": getattr(user, 'subscription_status', '-')
+        }
+
 
 
