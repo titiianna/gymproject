@@ -22,24 +22,24 @@ def _record_transaction(tx, transaction_list):
 
     FileHandler.txt_append(data_path("transactions.txt"), line)
 
-def _refresh_subscription_status(self):
+def _refresh_subscription_status(user):
 
-    if not self.subscription_end or self.subscription_end == "-":
-        self.subscription_status = "بدون اشتراک"
+    sub_end = getattr(user, 'subscription_end', '-')
+    if not sub_end or sub_end == "-":
+        user.subscription_status = "بدون اشتراک"
         return
 
     try:
-
-        end_date = datetime.strftime(str(self.subscription_end),"%Y-%m-%d %H:%M:%S" )
-
-        current_time = self._now
-
-        now = datetime.strptime(current_time, "%Y-%m-%d %H:%M:%S")
+        
+        end_date = datetime.strptime(str(sub_end), "%Y-%m-%d %H:%M:%S")
+        
+        
+        now = datetime.strptime(_now(), "%Y-%m-%d %H:%M:%S")
 
         if now > end_date:
-            self.subscription_status = "Expired"
+            user.subscription_status = "Expired"
         else:
-            self.subscription_status = "Active"
+            user.subscription_status = "Active"
 
     except (ValueError, TypeError):
         pass
@@ -52,7 +52,7 @@ def _get_member(username, users_dict):
     if user and getattr(user, 'role', None) == ROLE_MEMBER:
         return user
 
-    return False
+    return None
 
 
 class MemberService:
@@ -65,9 +65,8 @@ class MemberService:
         if not user:
             return None
 
-        if hasattr(user, 'refresh_subscription_status'):
-            user.refresh_subscription_status()
-
+        _refresh_subscription_status(user)
+        
         return {
             "name": getattr(user, 'name', '-'),
             "username": getattr(user, 'username', '-'),
