@@ -15,3 +15,13 @@ def menu(title, items):
         print(bcolors.FAIL+"Invalid option; try again."+bcolors.ENDC)
 
 
+def ask(prompt, allow_empty=False):
+    while True:
+        value = input(f"{prompt} (cancel: {CANCEL}): ").strip()
+        if value == CANCEL:
+            return None
+        if value or allow_empty:
+            return value
+        print("Input cannot be empty.")
+
+
