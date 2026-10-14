@@ -282,5 +282,18 @@ class MemberService:
 
             if not class_active:
                 return False, "Class is inactive."
-
             
+            #ممبر قبلا در این کلاس ثبت نام کرده یا نه
+            registered_classes = getattr(member, 'registered_classes', [])
+            if class_id in registered_classes:
+                return False, "Member is already enrolled in this class."
+            
+            #ظرفیت کلاس پر نشده باشد
+            is_full = getattr(target_class, 'is_full', False)
+            if callable(is_full):
+                is_full = is_full()
+
+            if is_full:
+                return False, "Class is full."
+
+            #رسید ثبت نام
