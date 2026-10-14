@@ -44,7 +44,7 @@ class Payment:
             member_username = data["member_username"],
             plan_title = data["plan_title"],
             amount = data["amount"],
-            payment = data["payment"],
+            payment_date = data["payment_date"],
             start_date = data["start_date"],
             end_date = data["end_date"],
             tracking_id = data["tracking_id"]

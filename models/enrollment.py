@@ -20,6 +20,6 @@ class Enrollment:
         return cls (
             username = data["username"],
             date = data["date"],
-            tracking_id = data["trcking_id"],
+            tracking_id = data["tracking_id"],
             is_active = data["is_active"]
         )
