@@ -15,5 +15,11 @@ class CoachService:
             if CoachService._class_id(class_obj) == wanted:
                 return class_obj
         return None
+    
+    @staticmethod
+    def _program_key(class_id, member_username):
+        return f"{class_id}:{member_username}"
+    
+    
 
    
