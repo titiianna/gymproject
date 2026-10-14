@@ -69,6 +69,45 @@ def _check_class(class_data , users_dict , halls_dict , alasses_list , class_id=
 
     return True, ""
 
+    @staticmethod
+    @log_action("create_class")
+    def create_class(title , sport_type ,coach_username , hall_name ,
+                     day , time , capacity , users_dict , halls_dict ,classes_list ):
+#بخش دیکشنری اطلاعات کلاس 
+        class_data = AdminService_make_class_data(title , sport_tyoe, 
+                                                  coach_username , hall_name , 
+                                                  day , time , capacity )
+
+        od,msg = AdminService_check_class(
+            class_data , users_dict
+            , halls_dict ,classes_list 
+
+        )
+
+        if not ok:
+            return False, msg
+#سناسه کلاس 
+        class_id = IdGenerator.class_id(classes_list )
+
+        new_class = ClassSession (
+            class_id , 
+            class_data[ "title "].strip() , 
+            class_data  ["sport_type "]
+            class_data["coach_username"],
+            class_data["hall_name"],
+            class_data["day"]
+            class_data["time"]
+            int(class_data["capacity"])
+        )
+#اضافه کردن کلاس به فهرست
+        classes_list.append(new_class)
+        return True , f"Class with id {class_id} Created "
+    
+
+
+
+
+    
 
     
 
