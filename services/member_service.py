@@ -160,3 +160,13 @@ class MemberService:
         member = _get_member(username, users_dict)
         if not member:
             return False, "کاربر یافت نشد یا دسترسی غیرمجاز است."
+
+        if not plans_dict or plan_title not in plans_dict:
+            return False, "طرح مورد نظر یافت نشد."
+
+        price = getattr(plan, "price", None) if not isinstance(plan, dict) else plan.get("price")
+        duration = getattr(plan, "duration", None) if not isinstance(plan, dict) else plan.get("duration")
+
+        if price is None or duration is None:
+            return False, "اطلاعات طرح نامعتبر است."
+
