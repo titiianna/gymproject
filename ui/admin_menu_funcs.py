@@ -2,7 +2,7 @@ from database import save_all
 from services.admin_service import AdminService as S
 from utils.constants import DAYS, ROLE_COACH, ROLE_MEMBER, SPORT_TYPES, data_path
 from utils.file_handler import FileHandler
-from ui.helpers import ask, ask_active, ask_choice, opt, show_table
+from ui.helpers import ask, ask_active, ask_choice, menu, opt, pick, show_table
 
 
 def _done(result, db):
@@ -189,3 +189,117 @@ def _view_halls(db):
         rows.append((h.name, h.capacity, equipment_text, status))
 
     show_table(["Name", "Capacity", "Equipment", "Status"], rows)
+
+
+def _class_row(c, db):
+    coach = db["users"].get(c.coach_username)
+
+    if coach != None:
+        coach_name = coach.name
+    else:
+        coach_name = c.coach_username
+
+    if c.is_active == True:
+        status = "Active"
+    else:
+        status = "Inactive"
+
+    time_text = c.day + " " + c.time
+
+    return (c.class_id, c.title, c.sport_type, coach_name,
+            c.hall_name, time_text, c.capacity, c.capacity_remaining, status)
+
+
+def _create_class(db):
+    title = ask("Class title")
+    sport = None
+    if title != None:
+        sport = ask_choice("Sport type", SPORT_TYPES)
+
+    coach = None
+    if sport != None:
+        coaches = []
+        all_users = S.list_users(db["users"], ROLE_COACH)
+        for u in all_users:
+            if u.is_active:
+                coaches.append(u)
+        coach = pick("Coach", coaches, lambda u: u.name + " (" + u.username + ")")
+
+    hall = None
+    if coach != None:
+        halls = []
+        all_halls = S.list_halls(db["halls"])
+        for h in all_halls:
+            if h.is_active:
+                halls.append(h)
+        hall = pick("Hall", halls, lambda h: h.name + " (capacity " + str(h.capacity) + ")")
+
+    day = None
+    if hall != None:
+        day = ask_choice("Day", DAYS)
+
+    time = None
+    if day != None:
+        time = ask("Time (e.g. 18:30)")
+
+    capacity = None
+    if time != None:
+        capacity = ask("Capacity")
+
+    if capacity == None:
+        return
+
+    result = S.create_class(title, sport, coach.username, hall.name, day, time, capacity,
+                            db["users"], db["halls"], db["classes"])
+    _done(result, db)
+
+
+def _edit_class(db):
+    cls = pick("Which class?", db["classes"], lambda x: x.class_id + " - " + x.title)
+    if cls == None:
+        return
+    print("Press Enter to leave a field unchanged.")
+    title = ask("New title", True)
+    coach = None
+    if title != None:
+        coach = ask("New coach username", True)
+    hall = None
+    if coach != None:
+        hall = ask("New hall name", True)
+    day = None
+    if hall != None:
+        day = ask("New day", True)
+    time = None
+    if day != None:
+        time = ask("New time", True)
+    capacity = None
+    if time != None:
+        capacity = ask("New capacity", True)
+    if capacity == None:
+        return
+
+    result = S.edit_class(cls.class_id, opt(title), None, opt(coach), opt(hall), opt(day),
+                          opt(time), opt(capacity), db["users"], db["halls"], db["classes"])
+    _done(result, db)
+
+
+def _toggle_class(db):
+    def show_cls(x):
+        if x.is_active == True:
+            status = "Active"
+        else:
+            status = "Inactive"
+        return x.class_id + " - " + x.title + " (" + status + ")"
+
+    cls = pick("Which class?", db["classes"], show_cls)
+    if cls != None:
+        result = S.toggle_class_status(cls.class_id, db["classes"])
+        _done(result, db)
+
+
+def _view_classes(db):
+    classes = S.list_classes(db["classes"])
+    rows = []
+    for x in classes:
+        rows.append(_class_row(x, db))
+    show_table(["ID", "Title", "Sport", "Coach", "Hall", "Time", "Total capacity", "Remaining", "Status"], rows)
