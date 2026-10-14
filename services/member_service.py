@@ -218,4 +218,26 @@ class MemberService:
 
         if not classes_list:
             return []
-        
+
+        available = []
+        for c in classes_list:
+
+            active = getattr(c, 'is_active', True)
+            if callable(active):
+                active = active()
+
+            capacity = getattr(c, 'capacity', 0)
+            enrolled = len(getattr(c, 'enrolled_members', getattr(c, 'enrolled', [])))
+
+            is_full = getattr(c, 'is_full', False)
+
+            if callable(is_full):
+                is_full = is_full()
+            else:
+                is_full = bool(is_full) or (capacity > 0 and enrolled >= capacity)
+
+            if active and not is_full:
+                available.append(c)
+
+        return available
+            
