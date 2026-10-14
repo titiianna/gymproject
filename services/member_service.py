@@ -297,3 +297,12 @@ class MemberService:
                 return False, "Class is full."
 
             #رسید ثبت نام
+            tracking_id = IdGenerator.trackimg_id('ENR')
+            enrollment_date = date.today().isoformat()
+
+            enrollment = Enrollment(username, enrollment_date, tracking_id)
+
+            #ثبت رسید و اتصال به کلاس ممبر
+            if not hasattr(target_class, 'enrollments') or target_class.enrollments is None:
+                target_class.enrollments = []
+                target_class.enrollments.append(enrollment)
