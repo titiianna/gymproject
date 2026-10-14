@@ -64,4 +64,19 @@ class ClassSession:
             "enrollments":[e.to_dict() for e in self.enrollments],
         }
         
-    
+    @classmethod
+    def from_dict(cls, data):
+        enrollments = [Enrollment.from_dict(e) for e in data.get("enrollments", [])]
+        return cls(
+            class_id=data["class_id"],
+            title=data["title"],
+            sport_type=data["sport_type"],
+            coach_username=data["coach_username"],
+            hall_name=data["hall_name"],
+            day=data["day"],
+            time=data["time"],
+            capacity=data["capacity"],
+            is_active=data.get("is_active", True),
+            enrollments=enrollments,
+        )
+ 
