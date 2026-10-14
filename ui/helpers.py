@@ -54,3 +54,9 @@ def show_table(headers, rows):
         for x in row:
             parts.append(str(x))
         print(" | ".join(parts))
+
+def opt(value):
+    if value:
+        return value
+    else:
+        return None
