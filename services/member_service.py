@@ -95,11 +95,11 @@ class MemberService:
     def deposit_wallet(username, amount, card, exp_month, exp_year, password, cvv2, wallets_dict, transactions_list):
 
         if not Validators.positive_int_validate(amount):
-            return False, "مبلغ وارد شده نامعتبر است."
+            return False, "The entered amount is invalid."
 
         wallet = wallets_dict.get(username)
         if not wallet:
-            return False, "کیف پول کاربر یافت نشد."
+            return False, "User wallet not found."
 
         try:
             int_exp_month = int(exp_month)
@@ -112,8 +112,7 @@ class MemberService:
             bank_api.pay(str_card, int_exp_month, int_exp_year, str_password, str_cvv2, amount)
 
         except(ValueError,TypeError):
-            return False, "خطا در پردازش اطلاعات کارت یا خطا در ارتباط با بانک"
-
+            return False, "Error processing card or connecting to the bank."
 
         tracking_id = IdGenerator.tracking_id('TX')
         current_time = _now
@@ -130,7 +129,7 @@ class MemberService:
 
         _record_transaction(tx, transactions_list)
 
-        return True, f"شارژ کیف پول با موفقیت انجام شد. کد پیگیری: {tracking_id}"
+        return True, f"Wallet deposit successful. Tracking code : {tracking_id}"
 
     @staticmethod
     def list_transactions(username, transactions_list):
@@ -159,10 +158,10 @@ class MemberService:
 
         member = _get_member(username, users_dict)
         if not member:
-            return False, "کاربر یافت نشد یا دسترسی غیرمجاز است."
+            return False, "User not found or unouthorized access."
 
         if not plans_dict or plan_title not in plans_dict:
-            return False, "طرح مورد نظر یافت نشد."
+            return False, "The requested plan was not found."
 
         
         plan = plans_dict[plan_title]
@@ -172,17 +171,17 @@ class MemberService:
         duration = getattr(plan, "duration", None) if not isinstance(plan, dict) else plan.get("duration")
 
         if price is None or duration is None:
-            return False, "اطلاعات طرح نامعتبر است."
+            return False, "Invalid plan information."
 
         if not wallets_dict or username not in wallets_dict:
-            return False, "کیف پول کاربر یافت نشد."
+            return False, "User wallet was not found."
 
         wallet = wallets_dict[username]
 
         current_balance = MemberService.get_balance(username, wallets_dict)
 
         if current_balance < price:
-            return False, "موجودی کیف پول برای خرید این اشتراک کافی نیست."
+            return False, "Insufficient wallet balance to purchase this subscription."
 
         wallet.withdraw(price)
 
@@ -212,5 +211,11 @@ class MemberService:
 
         _record_transaction(tx_data, transactions_list)
 
-        return True, "اشتراک با موفقیت خریداری شد."
+        return True, "Subscription purchased successfully."
+
+    @staticmethod
+    def list_available_classes(classes_list):
+
+        if not classes_list:
+            return []
         
