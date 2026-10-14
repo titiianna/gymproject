@@ -40,6 +40,12 @@ class AdminService:
         if item:
            hall_equipment.append(item)
 
+        hall=Hall(name = name , capacity= capacity , 
+                  equipment=hall_equipment)
+#ذخیره سالن در دیکشنری 
+        halls_dict[name]= hall 
+        return True , "hall added successfully "
+
        
     
 
