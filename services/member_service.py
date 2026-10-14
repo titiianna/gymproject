@@ -128,6 +128,27 @@ class MemberService:
             date=current_time
         )
 
-        MemberService._record_transaction(tx, transactions_list)
+        _record_transaction(tx, transactions_list)
 
         return True, f"شارژ کیف پول با موفقیت انجام شد. کد پیگیری: {tracking_id}"
+
+    @staticmethod
+    def list_transactions(username, transactions_list):
+
+        if not username or not transactions_list:
+            return []
+
+        user_transactions = []
+
+        for tx in transactions_list:
+
+            if isinstance(tx, dict):
+                tx_username = tx.get("username")
+
+            else:
+                tx_username = getattr(tx, "username", None)
+
+            if tx_username == username:
+                user_transactions.append(tx)
+
+        return user_transactions
