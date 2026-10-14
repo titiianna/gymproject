@@ -127,7 +127,7 @@ class AdminService:
                         halls=[]
                         for hall in halls_dict.values():
                             halls.append(hall)
-                            return halls
+                        return halls
                         
 
                         
