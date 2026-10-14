@@ -240,4 +240,20 @@ class MemberService:
                 available.append(c)
 
         return available
+
+    @staticmethod
+    @log_action('enroll_class')
+    def enroll_class(username, class_id, users_dict, classes_list):
+
+        if not users_dict or username not in users_dict:
+            return False, "Member not found."
+
+        member = users_dict[username]
+
+        is_active_member = getattr(member, 'is_active', True)
+        if callable(is_active_member):
+            is_active_member = is_active_member()
+
+        if not is_active_member:
+            return False, "Member account is inactive."
             
