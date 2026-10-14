@@ -23,7 +23,27 @@ class AdminService:
         return False , "hall already exists "
 
 #بررسی ظرفیت  سالن 
-    if not Validators.positive_init_validate (capacity)
+     if not Validators.positive_int_validate(capacity):
+      return False , "invalid hall capacity "
+
+#بخش بررسی تجهیزات سالن 
+     if not isinstance(equipment , list ):
+        return False , "equipment must be a list "
+
+     if not isinstance (is_active , bool):
+        return False , "invalid hall status"
+#اماده سازی تجهیزات سالن 
+     hall_equipment =[]
+     for item in equipment:
+        item= str (item).strip()
+#اضافه کردن تجهیزات 
+        if item:
+           hall_equipment.append(item)
+
+       
+    
+
+
      
 
      
