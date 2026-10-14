@@ -1,27 +1,37 @@
+def _fmt_amount(amount):
+    if float(amount).is_integer():
+        return str(int(amount))
+    return str(amount)
+
+def _is_number(x):
+    return isinstance(x, (int, float)) and not isinstance(x, bool)
+
 class Transaction:
-    def __init__(self,tx_type,amount,date,description,tracking_id):
+    def __init__(self,username,tx_type,amount,date,description,tracking_id):
+        self.username=username
         self.tx_type=tx_type
         self.amount=amount
         self.date=date
         self.description=description
         self.tracking_id=tracking_id
         
-    def to_string_format(self):
-        return f"{self.tx_type} | amount = {self.amount} | date = {self.date} | {self.description} | id = {self.tracking_id}\n"
+    def format_string(self):
+        return f"{tracking_id} | {username} | {tx_type} | {amount} | {date} | {description}"
         
+    @classmethod
+    def from_string(cls,line):
+        line_list = line.split("|")
+        return cls (
+            tracking_id = line_list[0],
+            username = line_list[1],
+            tx_type = line_list[2],
+            amount = line_list[3],
+            date = line_list[4],
+            description = line_list[5]
+        )
 
-    def to_dict(self):
-        return {
-            "tx_type":self.tx_type,
-            "amount":self.amount,
-            "date":self.date,
-            "description":self.description,
-            "tracking_id":self.tracking_id
-        }
-
-
-
-
+        
+        
 class Wallet:
     def __init__(self,username,balance=0.0):
         self.username=username
@@ -37,7 +47,7 @@ class Wallet:
 
         
     def withdraw(self , amount):
-        if amount>self.balance or amount<=0:
+        if amount>self.balance or amount<=0 or amount.isdigit():
             return False
         else:
             self.balance -= amount
@@ -48,3 +58,10 @@ class Wallet:
             "username":self.username,
             "balance":self.balance
         }
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+        username=data["username"],
+        balance=data.get("balance", 0.0)
+    )
