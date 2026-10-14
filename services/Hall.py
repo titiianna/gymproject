@@ -1,20 +1,5 @@
-try:
-    from models.hall import Hall
-except ModuleNotFoundError:
-    class Hall:
-        def __init__(self, name, capacity, equipment, is_active=True):
-            self.name = name
-            self.capacity = capacity
-            self.equipment = equipment
-            self.is_active = is_active
-
-try:
-    from utils.validators import Validators
-except ModuleNotFoundError:
-    class Validators:
-        @staticmethod
-        def positive_int_validate(value):
-            return isinstance(value, int) and value > 0
+from models.hall import Hall
+from utils.validators import Validators
 
 
 class AdminService:
@@ -83,7 +68,46 @@ class AdminService:
             if not validate_name( new_name ):
                 return False , "invalid or duplicate hall name "
             new_name= new_name.strip()
+#اعتبار سنجی ظرفیت جدید 
+        if capacity is not None:
+            if not Validators.positive_int_validate(capacity):
+                return False , "invalid capacity "
+
+            related_classes=[]
+
+            for session in classes_list:
+                if session.hall_name == old_name:
+                    related_classes.append(session)
+#ظرفیت سالن نباید کمتر باشه از کلاسای مرتبطش 
+                    for session in related_classes:
+                        if session.capacity > capacity:
+                            return False ," new capacity is too small"
+#بخش بررسی تجهیزات جدید 
+                        if equipment is not None :
+                            if not isinstance (equipment , list):
+                                return False , "equipment must be a list"
+#اعمال ظرفیت جدید 
+                        if capacity is not None :
+                            hall.capacity= capacity
+
+                        if equipment is not None :
+                            hall.equipment = [
+                                 str(item ).strip()
+                                 for item in equipment
+                                 if str(item ).strip()
+                            ]
+                            
+
+
+                        
+
+
+
+
+
             
+            
+
 
             
 
