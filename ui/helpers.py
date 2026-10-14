@@ -1,10 +1,9 @@
-from colors import bcolors
+from ui.colors import bcolors
 
 CANCEL = "/"
 
 
 def menu(title, items):
-    """Numbered menu; returns the chosen number (starting at 1)."""
     while True:
         print(bcolors.OKGREEN+f"\n=== {title} ==="+bcolors.ENDC)
         for i, item in enumerate(items, 1):
@@ -15,3 +14,43 @@ def menu(title, items):
         print(bcolors.FAIL+"Invalid option; try again."+bcolors.ENDC)
 
 
+def ask(prompt, allow_empty=False):
+    while True:
+        value = input(prompt + " (cancel: " + CANCEL + "): ").strip()
+        if value == CANCEL:
+            return None
+        if value:
+            return value
+        if allow_empty:
+            return value
+        print("Input cannot be empty.")
+
+
+def pick(title, items, label):
+    if len(items) == 0:
+        print("Nothing to display.")
+        return None
+
+    names = []
+    for i in items:
+        names.append(label(i))
+    names.append("Back")
+
+    c = menu(title, names)
+
+    if c == len(names):
+        return None
+    return items[c - 1]
+
+
+def show_table(headers, rows):
+    if len(rows) == 0:
+        print("Nothing to display.")
+        return
+    print(" | ".join(headers))
+    print("-" * 60)
+    for row in rows:
+        parts = []
+        for x in row:
+            parts.append(str(x))
+        print(" | ".join(parts))
