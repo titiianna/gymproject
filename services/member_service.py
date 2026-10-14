@@ -337,6 +337,35 @@ class MemberService:
             if target_class is None:
                 return False, "Class not found."
 
+            enrollments = getattr(target_class, 'enrollments', []) or []
+
+            #رسید ثبت نام فعال اگر پیدا شد
+            active_enrollment = None
+
+            for enrollment in enrollments:
+                enrollment_username = getattr(enrollment, 'username', None)
+                is_active = getattr(enrollment, 'is_active', False)
+
+                # یوزر نیم مال همین کاربر باشد را چک می کنم
+                if enrollment_username == username and is_active:
+                    active_enrollment = enrollment
+                    break
+
+            if active_enrollment is None:
+                return False , "No active enrollment found."
+
+            #استفاده از متد کلاس enrollment
+            active_enrollment.cancel()
+
+            #برداشتن کلاس آیدی بعد از کنسل کردن ثبت نام
+            registered_classes = getattr(member, 'registered_classes', None)
+            if registered_classes is not None and class_id in registered_classes:
+                registered_classes.remove(class_id)
+
+            return True, "Class enrollment cancelled successfully."
+        
+
+
             
 
 
