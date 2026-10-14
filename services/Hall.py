@@ -21,6 +21,9 @@ class AdminService:
 #بررسی تکراری نبودن نام 
      if name in halls_dict:
         return False , "hall already exists "
+
+#بررسی ظرفیت  سالن 
+    if not Validators.positive_init_validate (capacity)
      
 
      
