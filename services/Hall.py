@@ -111,6 +111,17 @@ class AdminService:
                                      session.hall_name = new_name
 
                         return True , "hall edited successfully "
+#فغال یا غیر فعال کردن سالن 
+                    @staticmethod
+                    def toggle_hall_status(name , halls_dict ):
+#پیدا کردن سالن داخل دیکشنری 
+                        hall= halls_dict.get(name)
+                        if hall is None :
+                            return False , "hall not found "
+                        hall.is_active = not hall.is_active 
+                        return True , "hall status changed successfully "
+
+                        
 
                             
                             
