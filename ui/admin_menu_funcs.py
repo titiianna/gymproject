@@ -102,3 +102,90 @@ def _view_users(db):
             print("✔ File created: " + path)
         else:
             print("✘ Failed to create the file.")
+
+def _add_hall(db):
+    name = ask("Hall name")
+    capacity = None
+    if name != None:
+        capacity = ask("Capacity")
+    equip = None
+    if capacity != None:
+        equip = ask("Equipment (comma separated)", True)
+    active = None
+    if equip != None:
+        active = ask_active("Hall status")
+    if active == None:
+        return
+
+    fixed = equip.replace("\u060c", ",")
+    parts = fixed.split(",")
+    equipment = []
+    for e in parts:
+        equipment.append(e)
+
+    result = S.add_hall(name, capacity, equipment, active, db["halls"])
+    _done(result, db)
+
+
+def _edit_hall(db):
+    halls = S.list_halls(db["halls"])
+    hall = pick("Which hall?", halls, lambda h: h.name)
+    if hall == None:
+        return
+    print("Press Enter to leave a field unchanged.")
+    new_name = ask("New name", True)
+    capacity = None
+    if new_name != None:
+        capacity = ask("New capacity", True)
+    equip = None
+    if capacity != None:
+        equip = ask("New equipment (comma separated)", True)
+    if equip == None:
+        return
+
+    if not equip:
+        equipment = None
+    else:
+        fixed = equip.replace("\u060c", ",")
+        equipment = fixed.split(",")
+
+    result = S.edit_hall(hall.name, opt(new_name), opt(capacity), equipment,
+                         db["halls"], db["classes"])
+    _done(result, db)
+
+
+def _toggle_hall(db):
+    halls = S.list_halls(db["halls"])
+
+    def show_hall(h):
+        if h.is_active == True:
+            status = "Active"
+        else:
+            status = "Inactive"
+        return h.name + " (" + status + ")"
+
+    hall = pick("Which hall?", halls, show_hall)
+    if hall != None:
+        result = S.toggle_hall_status(hall.name, db["halls"])
+        _done(result, db)
+
+
+def _view_halls(db):
+    halls = S.list_halls(db["halls"])
+
+    rows = []
+    for h in halls:
+        equipment_text = ""
+        for e in h.equipment:
+            if equipment_text != "":
+                equipment_text = equipment_text + ", "
+            equipment_text = equipment_text + e
+
+        if h.is_active == True:
+            status = "Active"
+        else:
+            status = "Inactive"
+
+        rows.append((h.name, h.capacity, equipment_text, status))
+
+    show_table(["Name", "Capacity", "Equipment", "Status"], rows)
