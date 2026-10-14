@@ -1,5 +1,6 @@
 from ui.colors import bcolors
 
+
 CANCEL = "/"
 
 
@@ -55,8 +56,41 @@ def show_table(headers, rows):
             parts.append(str(x))
         print(" | ".join(parts))
 
+
 def opt(value):
     if value:
         return value
     else:
         return None
+
+
+def ask_choice(prompt, options):
+    options_list = list(options)
+    full_list = []
+    for o in options_list:
+        full_list.append(o)
+    full_list.append("Cancel")
+
+    c = menu(prompt, full_list)
+
+    if c == len(options_list) + 1:
+        return None
+    return options_list[c - 1]
+
+
+def ask_active(prompt="Status", allow_skip=False):
+    items = ["Active", "Inactive"]
+    if allow_skip:
+        items.append("No change")
+    items.append("Cancel")
+
+    c = menu(prompt, items)
+
+    if items[c - 1] == "Cancel":
+        return None
+    if items[c - 1] == "No change":
+        return "skip"
+    if c == 1:
+        return True
+    else:
+        return False
