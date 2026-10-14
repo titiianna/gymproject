@@ -16,7 +16,7 @@ class Transaction:
         self.tracking_id=tracking_id
         
     def format_string(self):
-        return f"{tracking_id} | {username} | {tx_type} | {amount} | {date} | {description}"
+        return f"{self.tracking_id} | {self.username} | {self.tx_type} | {self.amount} | {self.date} | {self.description}\n"
         
     @classmethod
     def from_string(cls,line):
