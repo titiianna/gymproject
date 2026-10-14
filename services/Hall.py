@@ -120,6 +120,15 @@ class AdminService:
                             return False , "hall not found "
                         hall.is_active = not hall.is_active 
                         return True , "hall status changed successfully "
+#نمایش فهرست سالن 
+                    @staticmethod
+                    def list_halls(halls_dict):
+#ساخت لیست خالی برای نگهداری 
+                        halls=[]
+                        for hall in halls_dict.values():
+                            halls.append(hall)
+                            return halls
+                        
 
                         
 
