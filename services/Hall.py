@@ -96,7 +96,28 @@ class AdminService:
                                  for item in equipment
                                  if str(item ).strip()
                             ]
+#تغییر نام سالن در دیکشنری 
+                        if new_name is not None and new_name != old_name :
+#انتفال سالن از اسم قبلی به اسم جدید 
+                             halls_dict[ new_name] = halls_dict.pop( old_name)
+                             hall.name = new_name
+
+                             for session in classes_list:
+                                 if session.hall_name == old_name:
+                                     session.hall_name= new_name
+#بروزسانی نام سالن داخل کلاس
+                             for session in classes_list:
+                                 if session.hall_name == old_name :
+                                     session.hall_name = new_name
+
+                        return True , "hall edited successfully "
+
                             
+                            
+
+
+                        
+
 
 
                         
