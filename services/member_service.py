@@ -115,7 +115,7 @@ class MemberService:
             return False, "Error processing card or connecting to the bank."
 
         tracking_id = IdGenerator.tracking_id('TX')
-        current_time = _now
+        current_time = _now()
 
         wallet.deposit(amount)
 
@@ -166,9 +166,13 @@ class MemberService:
         
         plan = plans_dict[plan_title]
 
+        if isinstance(plan, dict):
+            price = plan.get("price")
+            duration = plan.get("duration")
 
-        price = getattr(plan, "price", None) if not isinstance(plan, dict) else plan.get("price")
-        duration = getattr(plan, "duration", None) if not isinstance(plan, dict) else plan.get("duration")
+        else:
+            price = getattr(plan, 'price', None)
+            duration = getattr(plan, 'duration', None)
 
         if price is None or duration is None:
             return False, "Invalid plan information."
@@ -185,9 +189,8 @@ class MemberService:
 
         wallet.withdraw(price)
 
-        duration = getattr(plan, 'duration', None) or plan.get('duration', 30)
         member.activate_subscription(duration)
-
+        
         tracking_id = IdGenerator.tracking_id('PAY')
 
         payment = Payment(
@@ -201,15 +204,15 @@ class MemberService:
             payments_list.append(payment)
 
 
-        tx_data = {
-            "username": username,
-            "amount": price,
-            "type": TX_SUBSCRIPTION,
-            "tracking_id": tracking_id,
-            "timestamp": _now()
-        }
+        tx = Transaction(
+            tracking_id = tracking_id,
+            username = username,
+            type = TX_SUBSCRIPTION,
+            amount = price,
+            date = _now()
+        )
 
-        _record_transaction(tx_data, transactions_list)
+        _record_transaction(tx, transactions_list)
 
         return True, "Subscription purchased successfully."
 
@@ -264,142 +267,144 @@ class MemberService:
             
         target_class = None
         for gym_class in classes_list or []:
+            current_id = getattr(gym_class,'id',getattr(gym_class, 'class_id', None))
+            if current_id == class_id:
+                target_class = gym_class
+                break
+
+        if target_class is None:
+            return False, "Class not found."
+
+        class_active = getattr(target_class, 'is_active', False)
+        if callable(class_active):
+            class_active = class_active()
+
+        if not class_active:
+            return False, "Class is inactive."
+            
+        #ممبر قبلا در این کلاس ثبت نام کرده یا نه
+        registered_classes = getattr(member, 'registered_classes', [])
+        if class_id in registered_classes:
+            return False, "Member is already enrolled in this class."
+            
+        #ظرفیت کلاس پر نشده باشد
+        is_full = getattr(target_class, 'is_full', False)
+        if callable(is_full):
+            is_full = is_full()
+
+        if is_full:
+            return False, "Class is full."
+
+        #رسید ثبت نام
+        tracking_id = IdGenerator.tracking_id('ENR')
+        enrollment_date = date.today().isoformat()
+
+        enrollment = Enrollment(username, enrollment_date, tracking_id)
+
+        #ثبت رسید و اتصال به کلاس ممبر
+        if not hasattr(target_class, 'enrollments') or target_class.enrollments is None:
+            target_class.enrollments = []
+        target_class.enrollments.append(enrollment)
+
+        #کلاس آیدی را به لیست کلاس های ثبت نامی خود عضو متصل می کنم
+        if not hasattr(member, 'registered_classes') or member.registered_classes is None:
+            member.registered_classes = []
+        member.registered_classes.append(class_id)
+
+        return True, f"Enrollment successful. Tracking ID: {tracking_id}"
+
+    @staticmethod
+    @log_action('cancel_class_enrollment')
+    def cancel_class_enrollment(username, class_id, users_dict, classes_list):
+
+        if not users_dict or username not in users_dict:
+            return False, "Member not found."
+
+        member = users_dict[username]
+
+        target_class = None
+        for gym_class in classes_list or []:
             current_id = getattr(
-                gym_class,
-                'id',
-                getattr(gym_class, 'class_id', None)
+            gym_class,
+            'id',
+            getattr(gym_class, 'class_id', None)
             )
             if current_id == class_id:
                 target_class = gym_class
                 break
 
-            if target_class is None:
-                return False, "Class not found."
+        if target_class is None:
+            return False, "Class not found."
 
-            class_active = getattr(target_class, 'is_active', False)
-            if callable(class_active):
-                class_active = class_active()
+        enrollments = getattr(target_class, 'enrollments', []) or []
 
-            if not class_active:
-                return False, "Class is inactive."
-            
-            #ممبر قبلا در این کلاس ثبت نام کرده یا نه
-            registered_classes = getattr(member, 'registered_classes', [])
-            if class_id in registered_classes:
-                return False, "Member is already enrolled in this class."
-            
-            #ظرفیت کلاس پر نشده باشد
-            is_full = getattr(target_class, 'is_full', False)
-            if callable(is_full):
-                is_full = is_full()
+        #رسید ثبت نام فعال اگر پیدا شد
+        active_enrollment = None
 
-            if is_full:
-                return False, "Class is full."
+        for enrollment in enrollments:
+            enrollment_username = getattr(enrollment, 'username', None)
+            is_active = getattr(enrollment, 'is_active', False)
 
-            #رسید ثبت نام
-            tracking_id = IdGenerator.trackimg_id('ENR')
-            enrollment_date = date.today().isoformat()
+            if callable(is_active):
+                is_active= is_active()
+            # یوزر نیم مال همین کاربر باشد را چک می کنم
+            if enrollment_username == username and is_active:
+                active_enrollment = enrollment
+                break
 
-            enrollment = Enrollment(username, enrollment_date, tracking_id)
+        if active_enrollment is None:
+            return False , "No active enrollment found."
 
-            #ثبت رسید و اتصال به کلاس ممبر
-            if not hasattr(target_class, 'enrollments') or target_class.enrollments is None:
-                target_class.enrollments = []
-                target_class.enrollments.append(enrollment)
+        #استفاده از متد کلاس enrollment
+        active_enrollment.cancel()
 
-            #کلاس آیدی را به لیست کلاس های ثبت نامی خود عضو متصل می کنم
-            if not hasattr(member, 'registered_classes') or member.registered_classes is None:
-                member.registered_classes = []
-                member.registered_classes.append(class_id)
+            #برداشتن کلاس آیدی بعد از کنسل کردن ثبت نام
+        registered_classes = getattr(member, 'registered_classes', None)
+        if registered_classes is not None and class_id in registered_classes:
+            registered_classes.remove(class_id)
 
-            return True, f"Enrollment successful. Tracking ID: {tracking_id}"
+        return True, "Class enrollment cancelled successfully."
 
-        @staticmethod
-        @log_action('cancel_class_enrollment')
-        def cancel_class_enrollment(username, class_id, users_dict, classes_list):
+    @staticmethod
+    def get_member_programs(username, programs_dict, classes_list):
 
-            if not users_dict or username not in users_dict:
-                return False, "Member not found."
+            #پیدا کردن آیدی کلاس هایی که ممبر ثبت نام داره
+        if not username or not programs_dict or not classes_list:
+            return []
 
-            member = users_dict[username]
+        active_classes_ids = set()
 
-            target_class = None
-            for gym_class in classes_list or []:
-                current_id = getattr(
-                gym_class,
-                'id',
-                getattr(gym_class, 'class_id', None)
-                )
-                if current_id == class_id:
-                    target_class = gym_class
-                    break
+        for gym_class in classes_list:
+            class_id = getattr(gym_class, 'id', getattr(gym_class, 'class_id', None))
+            enrollments = getattr(gym_class, 'enrollments', []) or []
 
-            if target_class is None:
-                return False, "Class not found."
-
-            enrollments = getattr(target_class, 'enrollments', []) or []
-
-            #رسید ثبت نام فعال اگر پیدا شد
-            active_enrollment = None
-
+        
             for enrollment in enrollments:
                 enrollment_username = getattr(enrollment, 'username', None)
                 is_active = getattr(enrollment, 'is_active', False)
 
-                # یوزر نیم مال همین کاربر باشد را چک می کنم
+                if callable(is_active):
+                    is_active = is_active()
+
                 if enrollment_username == username and is_active:
-                    active_enrollment = enrollment
+                    if class_id:
+                        active_classes_ids.add(class_id)
                     break
 
-            if active_enrollment is None:
-                return False , "No active enrollment found."
-
-            #استفاده از متد کلاس enrollment
-            active_enrollment.cancel()
-
-            #برداشتن کلاس آیدی بعد از کنسل کردن ثبت نام
-            registered_classes = getattr(member, 'registered_classes', None)
-            if registered_classes is not None and class_id in registered_classes:
-                registered_classes.remove(class_id)
-
-            return True, "Class enrollment cancelled successfully."
-
-        @staticmethod
-        def get_member_programs(username, programs_dict, classes_list):
-
-            #پیدا کردن آیدی کلاس هایی که ممبر ثبت نام داره
-            if not username or not programs_dict or not classes_list:
-                return []
-
-            active_classes_ids = set()
-
-            for gym_class in classes_list:
-                class_id = getattr(gym_class, 'id', getattr(gym_class, 'class_id', None))
-                enrollments = getattr(gym_class, 'enrollments', []) or []
-
-        
-                for enrollment in enrollments:
-                    enrollment_username = getattr(enrollment, 'username', None)
-                    is_active = getattr(enrollment, 'is_active', False)
-
-                    if enrollment_username == username and is_active:
-                        if class_id:
-                            active_classes_ids.add(class_id)
-                        break
-
-            if not active_classes_ids:
-                return []
+        if not active_classes_ids:
+            return []
 
             # حالا کلاسایی که ثبت نام فعال داره رو توی لیست نشونش میدم
-            member_programs = []
+        member_programs = []
 
-            for prog in programs_dict.values():
-                prog_user = getattr(prog, 'username', None)
-                prog_class_id = getattr(prog, 'class_id', None)
+        for prog in programs_dict.values():
+            prog_user = getattr(prog, 'username', None)
+            prog_class_id = getattr(prog, 'class_id', None)
 
-                if prog_user == username and prog_class_id in active_classes_ids:
-                    member_programs.append(prog)
-        return get_member_programs
+            if prog_user == username and prog_class_id in active_classes_ids:
+                member_programs.append(prog)
+
+        return member_programs
     
 
 
