@@ -1,3 +1,7 @@
+from datetime import date, timedelta
+from utils.constants import DAYS_PER_MONTH, ROLE_ADMIN, ROLE_COACH, ROLE_MEMBER, SUB_ACTIVE, SUB_EXPIRED, SUB_NONE
+
+
 class User:
     def __init__(self,name,username,password,email,is_active=True,role="user"):
         self.name=name
@@ -6,7 +10,7 @@ class User:
         self.email=email
         self.is_active=is_active
         self.role=role
-        pass
+        
 
     def to_dict(self):
         return {
@@ -61,16 +65,52 @@ class Member(User):
         })
         return data
 
-@classmethod
-def from_dict(cls, data):
-    return cls(
-        name=data["name"],
-        username=data["username"],
-        password=data["password"],
-        email=data["email"],
-        is_active=data.get("is_active", True),
-        subscription_status=data.get("subscription_status", "بدون اشتراک"),
-        subscription_start=data.get("subscription_start"),
-        subscription_end=data.get("subscription_end"),
-        registered_classes=data.get("registered_classes"),
-     )
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            name=data["name"],
+            username=data["username"],
+            password=data["password"],
+            email=data["email"],
+            is_active=data.get("is_active", True),
+            subscription_status=data.get("subscription_status", "بدون اشتراک"),
+            subscription_start=data.get("subscription_start"),
+            subscription_end=data.get("subscription_end"),
+            registered_classes=data.get("registered_classes"),
+        )
+
+    def refresh_subscription_status(self, today=None):
+    
+        if today is None:
+            today = date.today()
+        if self.subscription_end is None:
+            self.subscription_status = SUB_NONE
+        elif today <= date.fromisoformat(self.subscription_end):
+            self.subscription_status = SUB_ACTIVE
+        else:
+            self.subscription_status = SUB_EXPIRED
+
+        return self.subscription_status
+       
+    def has_active_subscription(self):
+        status = self.refresh_subscription_status() 
+        return status == SUB_ACTIVE                  
+        
+
+    def activate_subscription(self, plan_title, duration_months, today=None):
+        if today is None:
+            today = date.today()
+
+        if self.refresh_subscription_status(today) == SUB_ACTIVE:
+            start = date.fromisoformat(self.subscription_end)
+        else:
+            start = today
+
+        end = start + timedelta(days=duration_months * DAYS_PER_MONTH)
+
+        self.subscription_start = start.isoformat()
+        self.subscription_end = end.isoformat()
+        self.subscription_status = SUB_ACTIVE
+
+        return self.subscription_start, self.subscription_end
+        
