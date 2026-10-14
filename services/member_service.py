@@ -314,4 +314,30 @@ class MemberService:
 
             return True, f"Enrollment successful. Tracking ID: {tracking_id}"
 
+        @staticmethod
+        @log_action('cancel_class_enrollment')
+        def cancel_class_enrollment(username, class_id, users_dict, classes_list):
+
+            if not users_dict or username not in users_dict:
+                return False, "Member not found."
+
+            member = users_dict[username]
+
+            target_class = None
+            for gym_class in classes_list or []:
+                current_id = getattr(
+                gym_class,
+                'id',
+                getattr(gym_class, 'class_id', None)
+                )
+                if current_id == class_id:
+                    target_class = gym_class
+                    break
+
+            if target_class is None:
+                return False, "Class not found."
+
+            
+
+
             
