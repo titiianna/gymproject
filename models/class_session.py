@@ -1,5 +1,6 @@
 class ClassSession:
-    def __init__(self,title,sport_type,coach_username,hall_name,day,time,capacity,is_active=True):
+    def __init__(self,class_id,title,sport_type,coach_username,hall_name,day,time,capacity,is_active=True,enrolment=None):
+        self.class_id=class_id
         self.title=title
         self.sport_type=sport_type
         self.coach_username=coach_username
