@@ -393,7 +393,15 @@ class MemberService:
             # حالا کلاسایی که ثبت نام فعال داره رو توی لیست نشونش میدم
             member_programs = []
 
-            
+            for prog in programs_dict.values():
+                prog_user = getattr(prog, 'username', None)
+                prog_class_id = getattr(prog, 'class_id', None)
+
+                if prog_user == username and prog_class_id in active_classes_ids:
+                    member_programs.append(prog)
+        return get_member_programs
+    
+
 
             
 
