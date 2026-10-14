@@ -2,17 +2,17 @@
 def _make_class_data(title ,sport_type , coach_username
                       , hall_name , day , time , capacity  ):
 #ساخت دیکشنری اطلاعات کلاس 
-    return{"titel":title , "sport_type" :sport_type , "coach_username" : coach_username ,
+    return{"title":title , "sport_type" :sport_type , "coach_username" : coach_username ,
            "hall_name" : hall_name , "day":day , "time" :time ,"capacity":capacity}
 
 #اعتبار سنجی زمان کلاس 
 @staticmethod
-def _check_class(class_data, classes_list, class_id=None):
+def _check_class_conflict(class_data, classes_list, class_id=None):
 #بررسی کلاس های فعال برای پیدا کردم تداخل 
        for current_class in classes_list:
              if current_class.class_id == class_id :
                 continue
-             if ( current_class.day == class_data[ "day" ] and 
+             if ( current_class.day == class_data["day" ] and 
                   current_class.time == class_data[ "time"] ):
               if ( current_class.coach_username ==class_data[ "coach_username" ] ):
                   return False , "the instructor has another class at this time"
@@ -22,18 +22,19 @@ def _check_class(class_data, classes_list, class_id=None):
 
 #اعتبار سنجی اطلاعا کلاس 
 @staticmethod
-def _check_class(class_data , users_dict , halls_dict , alasses_list , class_id=None):
+def _check_class(class_data , users_dict , halls_dict , classes_list , class_id=None):
     title=class_data["title"]
-    sport_tyoe=class_data[ "sport_type "]
-    coach_username = class_data [ "coach_username "]
-    hall_name = class_data [ " hall_name "]
-    day = class_data [" day"]
-    time= class_data [" time "]
-    capacity = class_data [" capacity "]
+    sport_type=class_data["sport_type"]
+    coach_username = class_data ["coach_username"]
+    hall_name = class_data ["hall_name"]
+    day = class_data ["day"]
+    time= class_data ["time"]
+    capacity = class_data ["capacity"]
+    allowed_sports = {"Bodybuilding", "Yoga", "Pilates"}
 #بررسی عنوان کلاس 
     if not isinstance (title , str ) or not title.strip():
         return False , "The class title cannot be empty"
-    if sport_tyoe not in sport_tyoe :
+    if sport_type not in allowed_sports :
         return False , "The type of sport is invalid"
     coach= users_dict.get (coach_username )
     if coach is None or coach.role != role_coach:
@@ -45,7 +46,7 @@ def _check_class(class_data , users_dict , halls_dict , alasses_list , class_id=
         return False , "The requested hall was not found"
     if not validators.day_validate(day):
         return False , "The scheduled date is incorrect"
-    if not valiValidators.time_validate(time):
+    if not validators.time_validate(time):
         return False , "Incorrect scheduled time"
     if not validators.positive_int_validate (capacity):
         return False , "The capacity must be a positive integer"
@@ -53,7 +54,7 @@ def _check_class(class_data , users_dict , halls_dict , alasses_list , class_id=
     if capacity > hall.capacity:
         return False , "The capacity of the classroom is greater than the capacity of the hall"
 
-    ok,msg= AdminService.check_class_conflict (class_data , classes_list , class_id)
+    ok,msg= AdminService_.check_class_conflict (class_data , classes_list , class_id)
     if not ok:
             return False, msg
 
@@ -68,7 +69,7 @@ def create_class(title , sport_type ,coach_username , hall_name ,
                                                   coach_username , hall_name , 
                                                   day , time , capacity )
 
-        ok,msg = AdminService_check_class(
+        ok,msg = AdminService._check_class(
             class_data , users_dict
             , halls_dict ,classes_list 
 
@@ -79,15 +80,15 @@ def create_class(title , sport_type ,coach_username , hall_name ,
 #سناسه کلاس 
         class_id = IdGenerator.class_id(classes_list )
 
-        new_class = classSession (
+        new_class = ClassSession (
             class_id , 
-            class_data[ "title "].strip() , 
-            class_data  ["sport_type "]
+            class_data["title "].strip() , 
+            class_data["sport_type"],
             class_data["coach_username"],
             class_data["hall_name"],
-            class_data["day"]
-            class_data["time"]
-            int(class_data["capacity"])
+            class_data["day"],
+            class_data["time"],
+            int(class_data["capacity"]),
         )
 #اضافه کردن کلاس به فهرست
         classes_list.append(new_class)
@@ -189,16 +190,23 @@ def toggle_class_status(class_id, classes_list):
             "coach_username" : current_class.coach_username ,
             "hall_name" : current_class.hall_name ,
             "day" : current_class.day ,
-            "time" : current_class.tim ,
+            "time" : current_class.time ,
         }
-        ok, msg = AdminService._check_class_conflict(class_data , classes_list , class_id)
+        ok, msg = AdminService._check_class_conflict(
+            class_data ,
+            classes_list ,
+            class_id,
+            )
         if not ok:
-                return False, msg
+            return False, msg
 
         current_class.is_active = not current_class.is_active
         if current_class.is_active:
             return True, "The class has been activated"
         return True,"The class has been deactivated"
+@staticmethod
+def list_classes(classes_list):
+    return list(classes_list)
 
 
 
