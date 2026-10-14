@@ -22,5 +22,62 @@ def _check_class(class_data, classes_list, class_id=None):
              if current_class.hall_name == class_data [ "hall_name"]:
                  return False , " the hall is reserved at this time"
        return True , ""
-             
-              
+
+#اعتبار سنجی اطلاعا کلاس 
+@staticmethod
+def _check_class(class_data , users_dict , halls_dict , alasses_list , class_id=None):
+    title=class_data["title"]
+    sport_tyoe=class_data[ "sport_type "]
+    coach_username = class_data [ "coach_username "]
+    hall_name = class_data [ " hall_name "]
+    day = class_data [" day"]
+    time= class_data [" time "]
+    capacity = class_data [" capacity "]
+#بررسی عنوان کلاس 
+    if not isinstance (title , str ) or not title.strip():
+        return False , "The class title cannot be empty"
+#بررسی نوغ ورزشی 
+    if sport_tyoe not in sport_tyoe :
+        return False , "The type of sport is invalid"
+    coach= users_dict.get (coach_username )
+    if coach is None or coach.role != role_coach:
+        return False , "No coach was found"
+#بررسی فعال بودن مربی 
+    if not coach.is_active:
+        return False , "The coach is not available"
+#پیدا کردن سالن مورد نظر 
+    hall = halls_dict.get (hall_name)
+    if hall is None :
+        return False , "The requested hall was not found"
+#روز برگزاری
+    if not validators.day_validate(day):
+        return False , "The scheduled date is incorrect"
+#بررسی ساعت برگزاری 
+    if not valiValidators.time_validate(time):
+        return False , "Incorrect scheduled time"
+#بخش بررسی ظرفیت 
+    if not validators.positive_int_validate (capacity):
+        return False , "The capacity must be a positive integer"
+    capacity = int (capacity)
+#بررسی ظرفیت گلاس . سالن
+    if capacity > hall.capacity:
+        return False , "The capacity of the classroom is greater than the capacity of the hall"
+
+    ok,msg= AdminService.check_class_conflict (class_data , classes_list , class_id)
+    if not ok:
+            return False, msg
+
+    return True, ""
+
+
+    
+
+    
+    
+    
+
+
+
+    
+    
+    
