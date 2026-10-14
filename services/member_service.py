@@ -152,3 +152,11 @@ class MemberService:
                 user_transactions.append(tx)
 
         return user_transactions
+
+    @staticmethod
+    @log_action('subscribe')
+    def subscribe(username, plan_title, plans_dict, wallets_dict, users_dict, payments_list, transactions_list):
+
+        member = _get_member(username, users_dict)
+        if not member:
+            return False, "کاربر یافت نشد یا دسترسی غیرمجاز است."
