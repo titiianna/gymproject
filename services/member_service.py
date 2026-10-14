@@ -185,6 +185,32 @@ class MemberService:
             return False, "موجودی کیف پول برای خرید این اشتراک کافی نیست."
 
         wallet.withdraw(price)
-        
 
+        duration = getattr(plan, 'duration', None) or plan.get('duration', 30)
+        member.activate_subscription(duration)
+
+        tracking_id = IdGenerator.tracking_id('PAY')
+
+        payment = Payment(
+            username=username,
+            amount=price,
+            plan_title=plan_title,
+            tracking_id=tracking_id,
+            timestamp=_now()
+        )
+        if payments_list is not None:
+            payments_list.append(payment)
+
+
+        tx_data = {
+            "username": username,
+            "amount": price,
+            "type": TX_SUBSCRIPTION,
+            "tracking_id": tracking_id,
+            "timestamp": _now()
+        }
+
+        _record_transaction(tx_data, transactions_list)
+
+        return True, "اشتراک با موفقیت خریداری شد."
         
