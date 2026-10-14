@@ -65,8 +65,29 @@ class AdminService:
 
         if hall is None:
             return False , "hall not found "
-        
 
+        def validate_name (value):
+            if not isinstance(value, str ):
+                return False 
+
+            value= value.strip()
+#نام نباید خالی باشه
+            if not value:
+                return False
+#نام نباید متعلق به سالن دیگر باشد 
+            if value != old_name and value in halls_dict:
+                return False 
+            return True
+#اعتبار سنجحی نام جدید 
+        if new_name is not None :
+            if not validate_name( new_name ):
+                return False , "invalid or duplicate hall name "
+            new_name= new_name.strip()
+            
+
+            
+
+            
      
 
      
