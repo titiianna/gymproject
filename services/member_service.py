@@ -367,10 +367,11 @@ class MemberService:
         @staticmethod
         def get_member_programs(username, programs_dict, classes_list):
 
+            #پیدا کردن آیدی کلاس هایی که ممبر ثبت نام داره
             if not username or not programs_dict or not classes_list:
                 return []
 
-            active_classes_ids = []
+            active_classes_ids = set()
 
             for gym_class in classes_list:
                 class_id = getattr(gym_class, 'id', getattr(gym_class, 'class_id', None))
@@ -383,9 +384,16 @@ class MemberService:
 
                     if enrollment_username == username and is_active:
                         if class_id:
-                            active_classes_ids.append(class_id)
+                            active_classes_ids.add(class_id)
                         break
 
+            if not active_classes_ids:
+                return []
+
+            # حالا کلاسایی که ثبت نام فعال داره رو توی لیست نشونش میدم
+            member_programs = []
+
+            
 
             
 
