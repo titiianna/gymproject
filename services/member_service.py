@@ -109,13 +109,25 @@ class MemberService:
             str_cvv2 = str(cvv2)
 
             bank_api = API()
-            payment_result = bank_api.pay(
-                card=str_card,
-                exp_month=int_exp_month,
-                exp_year=int_exp_year,
-                password=str_password,
-                cvv2=str_cvv2,
-                amount=amount
-            )
+            bank_api.pay(str_card, int_exp_month, int_exp_year, str_password, str_cvv2, amount)
+
         except(ValueError,TypeError):
             return False, "خطا در پردازش اطلاعات کارت یا خطا در ارتباط با بانک"
+
+
+        tracking_id = IdGenerator.tracking_id('TX')
+        current_time = _now
+
+        wallet.deposit(amount)
+
+        tx = Transaction(
+            tracking_id=tracking_id,
+            username=username,
+            type=TX_DEPOSIT,
+            amount=amount,
+            date=current_time
+        )
+
+        MemberService._record_transaction(tx, transactions_list)
+
+        return True, f"شارژ کیف پول با موفقیت انجام شد. کد پیگیری: {tracking_id}"
