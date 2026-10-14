@@ -186,6 +186,17 @@ def edit_class(
     if current_class is None:
         return False, "Class not found"
 
+    check_coach = (
+        coach_username is not None
+        and coach_username != current_class.coach_username
+    )
+
+    check_hall = (
+        hall_name is not None
+        and hall_name != current_class.hall_name
+    )
+
+
     title = current_class.title if title is None else title
     sport_type = (
         current_class.sport_type
@@ -246,35 +257,47 @@ def edit_class(
 
     return True, "Class updated successfully"
 
+# فعال یا غیرفعال کردن کلاس
 @staticmethod
 @log_action("toggle_class_status")
 def toggle_class_status(class_id, classes_list):
-    current_class = None
-    for item in classes_list:
-       if item.class_id == class_id:
-        current_class = item
-        break
+    # پیدا کردن کلاس
+    current_class = next(
+        (
+            item
+            for item in classes_list
+            if item.class_id == class_id
+        ),
+        None,
+    )
+
     if current_class is None:
-      return False, "Class not found"
+        return False, "Class not found"
+
+    # هنگام فعال‌سازی، تداخل زمانی بررسی شود
     if not current_class.is_active:
         class_data = {
-            "coach_username" : current_class.coach_username ,
-            "hall_name" : current_class.hall_name ,
-            "day" : current_class.day ,
-            "time" : current_class.time ,
+            "coach_username": current_class.coach_username,
+            "hall_name": current_class.hall_name,
+            "day": current_class.day,
+            "time": current_class.time,
         }
+
         ok, msg = AdminService._check_class_conflict(
-            class_data ,
-            classes_list ,
+            class_data,
+            classes_list,
             class_id,
-            )
+        )
+
         if not ok:
             return False, msg
 
-        current_class.is_active = not current_class.is_active
-        if current_class.is_active:
-            return True, "The class has been activated"
-        return True,"The class has been deactivated"
+        current_class.is_active = True
+        return True, "The class has been activated"
+
+    # غیرفعال کردن کلاس
+    current_class.is_active = False
+    return True, "The class has been deactivated"
 @staticmethod
 def list_classes(classes_list):
     return list(classes_list)
