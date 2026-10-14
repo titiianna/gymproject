@@ -69,16 +69,16 @@ def _check_class(class_data , users_dict , halls_dict , alasses_list , class_id=
 
     return True, ""
 
-    @staticmethod
-    @log_action("create_class")
-    def create_class(title , sport_type ,coach_username , hall_name ,
+@staticmethod
+@log_action("create_class")
+def create_class(title , sport_type ,coach_username , hall_name ,
                      day , time , capacity , users_dict , halls_dict ,classes_list ):
 #بخش دیکشنری اطلاعات کلاس 
-        class_data = AdminService_make_class_data(title , sport_tyoe, 
+        class_data = AdminService._make_class_data(title , sport_type, 
                                                   coach_username , hall_name , 
                                                   day , time , capacity )
 
-        od,msg = AdminService_check_class(
+        ok,msg = AdminService_check_class(
             class_data , users_dict
             , halls_dict ,classes_list 
 
@@ -89,7 +89,7 @@ def _check_class(class_data , users_dict , halls_dict , alasses_list , class_id=
 #سناسه کلاس 
         class_id = IdGenerator.class_id(classes_list )
 
-        new_class = ClassSession (
+        new_class = classSession (
             class_id , 
             class_data[ "title "].strip() , 
             class_data  ["sport_type "]
@@ -102,21 +102,98 @@ def _check_class(class_data , users_dict , halls_dict , alasses_list , class_id=
 #اضافه کردن کلاس به فهرست
         classes_list.append(new_class)
         return True , f"Class with id {class_id} Created "
-    
 
+# بخش ویرایش کلاس
+@staticmethod
+@log_action("edit_class")
+def edit_class(
+    class_id,
+    title,
+    sport_type,
+    coach_username,
+    hall_name,
+    day,
+    time,
+    capacity,
+    users_dict,
+    halls_dict,
+    classes_list,
+):
+# پیدا کردن کلاس موردنظر
+    current_class = None
 
+    for item in classes_list:
+        if item.class_id == class_id:
+            current_class = item
+            break
 
+# اگر کلاس پیدا نشد
+    if current_class is None:
+        return False, "Class not found"
+#اگر عنوان جدید ارسال نشدعنوان قبلی حفظ می‌شود
+    if title is None:
+        title = current_class.title
+#اگر نوع دیگری از ورزش ارسال نشد قبلی حفظ میکنیم 
+    if sport_type is None:
+        sport_type = current_class.sport_type
+#اگر مربی جدیدی اد نشد مربی قبلی حفظ میشه 
+    if coach_username is None:
+        coach_username = current_class.coach_username
+#بخش سالن هستش جدید وارد نشه قبلی میمونه 
+    if hall_name is None:
+        hall_name = current_class.hall_name
+#بخش روز هستش ترتیبش مثل قبلی ها هستش 
+    if day is None:
+        day = current_class.day
+#بخش تایم هست 
+    if time is None:
+        time = current_class.time
+#بخش ظرفیت هستش 
+    if capacity is None:
+        capacity = current_class.capacity
+#ساخت دیکشنری اطلاعات کلاس 
+    class_data = AdminService._make_class_data(
+        title,
+        sport_type,
+        coach_username,
+        hall_name,
+        day,
+        time,
+        capacity,
+    )
 
-    
+# شمارش ثبت‌نام‌های فعال
+    active_enrollments = 0
 
-    
+    for enrollment in current_class.enrollments:
+     if enrollment.is_active:
+        active_enrollments += 1
 
-    
-    
-    
+# ظرفیت جدید نباید کمتر از ثبت‌نام‌های فعال باشد
+    if int(class_data["capacity"]) < active_enrollments:
+     return False, "The capacity cannot be less than the active registrations."
 
+# اعتبارسنجی اطلاعات جدید کلاس
+    ok, message = AdminService._check_class(
+        class_data,
+        users_dict,
+        halls_dict,
+        classes_list,
+        class_id=class_id,
+    )
 
+# اگر اطلاعات معتبر نبود، ویرایش انجام نشه 
+    if not ok:
+        return False, message
 
-    
-    
-    
+# اعمال تغییرات روی کلاس
+    current_class.title = class_data["title"]
+    current_class.sport_type = class_data["sport_type"]
+    current_class.coach_username = class_data["coach_username"]
+    current_class.hall_name = class_data["hall_name"]
+    current_class.day = class_data["day"]
+    current_class.time = class_data["time"]
+    current_class.capacity = int(class_data["capacity"])
+
+# پایان ویرایش
+    return True, "Class updated successfully"
