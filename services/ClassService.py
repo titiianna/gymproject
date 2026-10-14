@@ -1,12 +1,3 @@
-
-@staticmethod
-def _make_class_data(title ,sport_type , coach_username
-                      , hall_name , day , time , capacity  ):
-#ساخت دیکشنری اطلاعات کلاس 
-    return{"title":title , "sport_type" :sport_type , "coach_username" : coach_username ,
-           "hall_name" : hall_name , "day":day , "time" :time ,"capacity":capacity}
-
-#اعتبار سنجی زمان کلاس 
 @staticmethod
 def _check_class_conflict(class_data, classes_list, class_id=None):
     for current_class in classes_list:
@@ -26,11 +17,7 @@ def _check_class_conflict(class_data, classes_list, class_id=None):
 
             if current_class.hall_name == class_data["hall_name"]:
                 return False, "The hall is reserved at this time"
-
     return True, ""
-
-#اعتبار سنجی اطلاعا کلاس 
-# اعتبارسنجی اطلاعات کلاس
 @staticmethod
 def _check_class(
     title,
@@ -100,10 +87,8 @@ def _check_class(
         classes_list,
         exclude_id,
     )
-
     if not ok:
         return False, msg
-
     return True, ""
 
 @staticmethod
@@ -139,7 +124,6 @@ def create_class(
 
     # تولید شناسه کلاس
     class_id = IdGenerator.class_id(classes_list)
-
     # ساخت شیء کلاس
     new_class = ClassSession(
         class_id,
@@ -151,10 +135,8 @@ def create_class(
         time,
         int(capacity),
     )
-
     # اضافه کردن کلاس به فهرست
     classes_list.append(new_class)
-
     return True, f"Class with id {class_id} created"
 
 # بخش ویرایش کلاس
@@ -182,7 +164,6 @@ def edit_class(
         ),
         None,
     )
-
     if current_class is None:
         return False, "Class not found"
 
@@ -190,13 +171,10 @@ def edit_class(
         coach_username is not None
         and coach_username != current_class.coach_username
     )
-
     check_hall = (
         hall_name is not None
         and hall_name != current_class.hall_name
     )
-
-
     title = current_class.title if title is None else title
     sport_type = (
         current_class.sport_type
@@ -227,7 +205,6 @@ def edit_class(
         for enrollment in current_class.enrollments
         if enrollment.is_active
     )
-
     # اعتبارسنجی اطلاعات کلاس
     ok, msg = AdminService._check_class(
         title,
@@ -241,9 +218,10 @@ def edit_class(
         halls_dict,
         classes_list,
         exclude_id=class_id,
+        check_coach=check_coach,
+        check_hall=check_hall,
         min_capacity=active_enrollments,
     )
-
     if not ok:
         return False, msg
 
@@ -254,14 +232,11 @@ def edit_class(
     current_class.day = day
     current_class.time = time
     current_class.capacity = int(capacity)
-
     return True, "Class updated successfully"
 
-# فعال یا غیرفعال کردن کلاس
 @staticmethod
 @log_action("toggle_class_status")
 def toggle_class_status(class_id, classes_list):
-    # پیدا کردن کلاس
     current_class = next(
         (
             item
@@ -270,10 +245,8 @@ def toggle_class_status(class_id, classes_list):
         ),
         None,
     )
-
     if current_class is None:
         return False, "Class not found"
-
     # هنگام فعال‌سازی، تداخل زمانی بررسی شود
     if not current_class.is_active:
         class_data = {
@@ -282,19 +255,15 @@ def toggle_class_status(class_id, classes_list):
             "day": current_class.day,
             "time": current_class.time,
         }
-
         ok, msg = AdminService._check_class_conflict(
             class_data,
             classes_list,
             class_id,
         )
-
         if not ok:
             return False, msg
-
         current_class.is_active = True
         return True, "The class has been activated"
-
     # غیرفعال کردن کلاس
     current_class.is_active = False
     return True, "The class has been deactivated"
