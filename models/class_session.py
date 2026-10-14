@@ -20,7 +20,7 @@ class ClassSession:
                 result.append(e)
         return result
 
-    
+    @property
     def capacity_remaining(self):
         active_list = self.active_enrollments()   
         taken = len(active_list)               
@@ -30,6 +30,16 @@ class ClassSession:
             remaining = 0
 
         return remaining
+
+    @property
+    def is_full(self):
+        return self.capacity_remaining <= 0
+
+    def get_enrollment(self, username):
+        for e in self.active_enrollments():
+            if e.username == username:
+                return e
+        return None
         
     def to_dict(self):
         pass
