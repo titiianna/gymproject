@@ -377,6 +377,14 @@ class MemberService:
                 enrollments = getattr(gym_class, 'enrollments', []) or []
 
         
+                for enrollment in enrollments:
+                    enrollment_username = getattr(enrollment, 'username', None)
+                    is_active = getattr(enrollment, 'is_active', False)
+
+                    if enrollment_username == username and is_active:
+                        if class_id:
+                            active_classes_ids.append(class_id)
+                        break
 
 
             
