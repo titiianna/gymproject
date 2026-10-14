@@ -40,6 +40,15 @@ class ClassSession:
             if e.username == username:
                 return e
         return None
+
+    def has_active_member(self, username):
+        return self.get_enrollment(username) is not None
+
+    def active_member_usernames(self):
+        result = []                                  
+        for e in self.active_enrollments():           
+            result.append(e.username)                 
+        return result
         
     def to_dict(self):
         pass
