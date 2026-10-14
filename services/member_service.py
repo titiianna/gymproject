@@ -371,6 +371,11 @@ class MemberService:
                 return []
 
             active_classes_ids = []
+
+            for gym_class in classes_list:
+                class_id = getattr(gym_class, 'id', getattr(gym_class, 'class_id', None))
+                enrollments = getattr(gym_class, 'enrollments', []) or []
+
         
 
 
