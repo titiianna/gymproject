@@ -46,6 +46,22 @@ class ClassService:
                     return False , "No coach was found"
                 if not coach.is_active :
                     return False , "The coach is not available"
+                hall = halls_dict.get (hall_name)
+                if hall is None :
+                    return False , "The requested hall was not found"
+                if not validators.day_validate (day):
+                    return False , "The scheduled date is incorrect"
+                if not validators.time_validate (time):
+                    return False , "Incorrect scheduled time"
+                if not validators.positive_int_validate (capacity):
+                    return False , "The capacity must be a positive integer"
+                capacity - int (capacity)
+                if capacity > hall.capacity :
+                    return False ,"The capacity of the classroom is greater than the capacity of the hall"
+                
+                
+
+                
                 
 
                 
