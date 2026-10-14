@@ -101,4 +101,21 @@ class MemberService:
         if not wallet:
             return False, "کیف پول کاربر یافت نشد."
 
-        
+        try:
+            int_exp_month = int(exp_month)
+            int_exp_year = int(exp_year)
+            str_card = str(card)
+            str_password = str(password)
+            str_cvv2 = str(cvv2)
+
+            bank_api = API()
+            payment_result = bank_api.pay(
+                card=str_card,
+                exp_month=int_exp_month,
+                exp_year=int_exp_year,
+                password=str_password,
+                cvv2=str_cvv2,
+                amount=amount
+            )
+        except(ValueError,TypeError):
+            return False, "خطا در پردازش اطلاعات کارت یا خطا در ارتباط با بانک"
