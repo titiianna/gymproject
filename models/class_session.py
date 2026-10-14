@@ -49,6 +49,19 @@ class ClassSession:
         for e in self.active_enrollments():           
             result.append(e.username)                 
         return result
-        
+
     def to_dict(self):
-        pass
+        return {
+            "class_id":self.class_id,
+            "title":self.title,
+            "sport_type":self.sport_type,
+            "coach_username":self.coach_username,
+            "hall_name":self.hall_name,
+            "day":self.day,
+            "time":self.time,
+            "capacity":self.capacity,
+            "is_active":self.is_active,
+            "enrollments":[e.to_dict() for e in self.enrollments],
+        }
+        
+    
