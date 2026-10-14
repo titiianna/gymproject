@@ -26,7 +26,7 @@ def _refresh_subscription_status(user):
 
     sub_end = getattr(user, 'subscription_end', '-')
     if not sub_end or sub_end == "-":
-        user.subscription_status = "بدون اشتراک"
+        user.subscription_status = "No subscription"
         return
 
     try:
@@ -256,4 +256,31 @@ class MemberService:
 
         if not is_active_member:
             return False, "Member account is inactive."
+
+        has_subscription = getattr(member, 'has_active_subscription', None)
+        if not callable(has_subscription) or not has_subscription():
+            return False, "Member does not have an active subscription."
+
+            
+        target_class = None
+        for gym_class in classes_list or []:
+            current_id = getattr(
+                gym_class,
+                'id',
+                getattr(gym_class, 'class_id', None)
+            )
+            if current_id == class_id:
+                target_class = gym_class
+                break
+
+            if target_class is None:
+                return False, "Class not found."
+
+            class_active = getattr(target_class, 'is_active', False)
+            if callable(class_active):
+                class_active = class_active()
+
+            if not class_active:
+                return False, "Class is inactive."
+
             
