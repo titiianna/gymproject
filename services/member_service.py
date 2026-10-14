@@ -66,7 +66,7 @@ class MemberService:
             return None
 
         _refresh_subscription_status(user)
-        
+
         return {
             "name": getattr(user, 'name', '-'),
             "username": getattr(user, 'username', '-'),
@@ -90,3 +90,15 @@ class MemberService:
 
         return wallet_balance
 
+    @staticmethod
+    @log_action('deposit_wallet')
+    def deposit_wallet(username, amount, card, exp_month, exp_year, password, cvv2, wallets_dict, transactions_list):
+
+        if not Validators.positive_int_validate(amount):
+            return False, "مبلغ وارد شده نامعتبر است."
+
+        wallet = wallets_dict.get(username)
+        if not wallet:
+            return False, "کیف پول کاربر یافت نشد."
+
+        
