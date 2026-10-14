@@ -363,6 +363,14 @@ class MemberService:
                 registered_classes.remove(class_id)
 
             return True, "Class enrollment cancelled successfully."
+
+        @staticmethod
+        def get_member_programs(username, programs_dict, classes_list):
+
+            if not username or not programs_dict or not classes_list:
+                return []
+
+            active_classes_ids = []
         
 
 
