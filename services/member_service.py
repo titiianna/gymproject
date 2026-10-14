@@ -164,9 +164,27 @@ class MemberService:
         if not plans_dict or plan_title not in plans_dict:
             return False, "طرح مورد نظر یافت نشد."
 
+        
+        plan = plans_dict[plan_title]
+
+
         price = getattr(plan, "price", None) if not isinstance(plan, dict) else plan.get("price")
         duration = getattr(plan, "duration", None) if not isinstance(plan, dict) else plan.get("duration")
 
         if price is None or duration is None:
             return False, "اطلاعات طرح نامعتبر است."
 
+        if not wallets_dict or username not in wallets_dict:
+            return False, "کیف پول کاربر یافت نشد."
+
+        wallet = wallets_dict[username]
+
+        current_balance = MemberService.get_balance(username, wallets_dict)
+
+        if current_balance < price:
+            return False, "موجودی کیف پول برای خرید این اشتراک کافی نیست."
+
+        wallet.withdraw(price)
+        
+
+        
