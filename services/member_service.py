@@ -306,3 +306,12 @@ class MemberService:
             if not hasattr(target_class, 'enrollments') or target_class.enrollments is None:
                 target_class.enrollments = []
                 target_class.enrollments.append(enrollment)
+
+            #کلاس آیدی را به لیست کلاس های ثبت نامی خود عضو متصل می کنم
+            if not hasattr(member, 'registered_classes') or member.registered_classes is None:
+                member.registered_classes = []
+                member.registered_classes.append(class_id)
+
+            return True, f"Enrollment successful. Tracking ID: {tracking_id}"
+
+            
