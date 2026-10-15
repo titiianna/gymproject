@@ -15,9 +15,21 @@ class IdGenerator:
     @staticmethod
     def class_id(classes_list):
 
+        max_num = 0
+
         if classes_list:
             for c in classes_list:
                 cid = getattr(c, 'class_id', None) or getattr(c, 'id', None)
+
                 if cid is None and isinstance(c, dict):
                     cid = c.get('class_id') or c.get('id')
+
+                if isinstance(cid, str) and cid.startswith('C'):
+                    num_part = cid[1:]
+                    if num_part.isdigit():
+                        num = int(num_part)
+                        max_num = max(max_num, int(num_part))
+
+
+        return f"C{max_num + 1:03d}"
 
