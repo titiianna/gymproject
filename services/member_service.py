@@ -1,4 +1,5 @@
 from datetime import date, datetime
+
 from models.enrollment import Enrollment
 from models.subscription import Payment
 from models.wallet import Transaction
@@ -11,404 +12,144 @@ from utils.validators import Validators
 
 
 def _now():
-
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-def _record_transaction(tx, transaction_list):
 
-    transaction_list.append(tx)
-
-    line = tx.format_string + "\n"
-
-    FileHandler.txt_append(data_path("transactions.txt"), line)
-
-def _refresh_subscription_status(user):
-
-    sub_end = getattr(user, 'subscription_end', '-')
-    if not sub_end or sub_end == "-":
-        user.subscription_status = "No subscription"
-        return
-
-    try:
-        
-        end_date = datetime.strptime(str(sub_end), "%Y-%m-%d %H:%M:%S")
-        
-        
-        now = datetime.strptime(_now(), "%Y-%m-%d %H:%M:%S")
-
-        if now > end_date:
-            user.subscription_status = "Expired"
-        else:
-            user.subscription_status = "Active"
-
-    except (ValueError, TypeError):
-        pass
+def _record_transaction(tx, transactions_list):
+    transactions_list.append(tx)
+    FileHandler.txt_append(data_path("transactions.txt"), tx.format_string() + "\n")
 
 
 def _get_member(username, users_dict):
-
     user = users_dict.get(username)
-
-    if user and getattr(user, 'role', None) == ROLE_MEMBER:
-        return user
-
-    return None
+    if user is None or user.role != ROLE_MEMBER:
+        return None
+    return user
 
 
 class MemberService:
-
     @staticmethod
     def get_profile(username, users_dict):
-
-        user = _get_member(username, users_dict)
-
-        if not user:
+        member = _get_member(username, users_dict)
+        if member is None:
             return None
-
-        _refresh_subscription_status(user)
-
+        member.refresh_subscription_status()
         return {
-            "name": getattr(user, 'name', '-'),
-            "username": getattr(user, 'username', '-'),
-            "email": getattr(user, 'email', '-'),
-            "account_status": getattr(user, 'account_status', '-'),
-            "subscription_type": getattr(user, 'subscription_type', '-'),
-            "subscription_start": getattr(user, 'subscription_start', '-'),
-            "subscription_end": getattr(user, 'subscription_end', '-'),
-            "subscription_status": getattr(user, 'subscription_status', '-')
+            "name": member.name, "username": member.username, "email": member.email,
+            "account_status": "Active" if member.is_active else "Inactive",
+            "subscription_type": member.subscription_type or "-",
+            "subscription_start": member.subscription_start or "-",
+            "subscription_end": member.subscription_end or "-",
+            "subscription_status": member.subscription_status,
         }
 
     @staticmethod
     def get_balance(username, wallets_dict):
-
         wallet = wallets_dict.get(username)
-
-        if not wallet:
-            return 0.0
-
-        wallet_balance = getattr(wallet, 'balance', 0.0)
-
-        return wallet_balance
+        return wallet.balance if wallet else 0.0
 
     @staticmethod
-    @log_action('deposit_wallet')
-    def deposit_wallet(username, amount, card, exp_month, exp_year, password, cvv2, wallets_dict, transactions_list):
-
-        if not Validators.positive_int_validate(amount):
-            return False, "The entered amount is invalid."
-
+    @log_action("deposit_wallet")
+    def deposit_wallet(username, amount, card, exp_month, exp_year, password, cvv2,
+                       wallets_dict, transactions_list):
         wallet = wallets_dict.get(username)
-        if not wallet:
-            return False, "User wallet not found."
-
+        if wallet is None:
+            return False, "Wallet not found."
+        if not Validators.positive_int_validate(amount):
+            return False, "Amount must be a positive integer."
+        amount = int(amount)
         try:
-            int_exp_month = int(exp_month)
-            int_exp_year = int(exp_year)
-            str_card = str(card)
-            str_password = str(password)
-            str_cvv2 = str(cvv2)
-
-            bank_api = API()
-            bank_api.pay(str_card, int_exp_month, int_exp_year, str_password, str_cvv2, amount)
-
-        except(ValueError,TypeError):
-            return False, "Error processing card or connecting to the bank."
-
-        tracking_id = IdGenerator.tracking_id('TX')
-        current_time = _now()
-
+            exp_month, exp_year = int(exp_month), int(exp_year)
+        except (TypeError, ValueError):
+            return False, "Expiry month and year must be numbers."
+        try:
+            API().pay(str(card), exp_month, exp_year, str(password), str(cvv2), amount)
+        except (ValueError, TypeError):
+            return False, "Invalid card details; the payment was not made."
         wallet.deposit(amount)
-
-        tx = Transaction(
-            tracking_id=tracking_id,
-            username=username,
-            type=TX_DEPOSIT,
-            amount=amount,
-            date=current_time
-        )
-
+        tx = Transaction(username, TX_DEPOSIT, amount, "Top up wallet", _now(),
+                         IdGenerator.tracking_id("TX"))
         _record_transaction(tx, transactions_list)
-
-        return True, f"Wallet deposit successful. Tracking code : {tracking_id}"
+        return True, f"Wallet charged. Tracking number: {tx.tracking_id}"
 
     @staticmethod
     def list_transactions(username, transactions_list):
-
-        if not username or not transactions_list:
-            return []
-
-        user_transactions = []
-
-        for tx in transactions_list:
-
-            if isinstance(tx, dict):
-                tx_username = tx.get("username")
-
-            else:
-                tx_username = getattr(tx, "username", None)
-
-            if tx_username == username:
-                user_transactions.append(tx)
-
-        return user_transactions
+        return [t for t in transactions_list if t.username == username]
 
     @staticmethod
-    @log_action('subscribe')
-    def subscribe(username, plan_title, plans_dict, wallets_dict, users_dict, payments_list, transactions_list):
-
+    @log_action("subscribe")
+    def subscribe(username, plan_title, plans_dict, wallets_dict, users_dict,
+                  payments_list, transactions_list):
         member = _get_member(username, users_dict)
-        if not member:
-            return False, "User not found or unouthorized access."
-
-        if not plans_dict or plan_title not in plans_dict:
-            return False, "The requested plan was not found."
-
-        
-        plan = plans_dict[plan_title]
-
-        if isinstance(plan, dict):
-            price = plan.get("price")
-            duration = plan.get("duration")
-
-        else:
-            price = getattr(plan, 'price', None)
-            duration = getattr(plan, 'duration', None)
-
-        if price is None or duration is None:
-            return False, "Invalid plan information."
-
-        if not wallets_dict or username not in wallets_dict:
-            return False, "User wallet was not found."
-
-        wallet = wallets_dict[username]
-
-        current_balance = MemberService.get_balance(username, wallets_dict)
-
-        if current_balance < price:
-            return False, "Insufficient wallet balance to purchase this subscription."
-
-        wallet.withdraw(price)
-
-        member.activate_subscription(duration)
-        
-        tracking_id = IdGenerator.tracking_id('PAY')
-
-        payment = Payment(
-            username=username,
-            amount=price,
-            plan_title=plan_title,
-            tracking_id=tracking_id,
-            timestamp=_now()
-        )
-        if payments_list is not None:
-            payments_list.append(payment)
-
-
-        tx = Transaction(
-            tracking_id = tracking_id,
-            username = username,
-            type = TX_SUBSCRIPTION,
-            amount = price,
-            date = _now()
-        )
-
-        _record_transaction(tx, transactions_list)
-
-        return True, "Subscription purchased successfully."
+        if member is None:
+            return False, "Member not found."
+        plan = plans_dict.get(plan_title)
+        if plan is None:
+            return False, "Plan not found."
+        wallet = wallets_dict.get(username)
+        if wallet is None:
+            return False, "Wallet not found."
+        if wallet.balance < plan.price:
+            return False, (f"Insufficient balance. Plan price is {plan.price:,} and your balance is "
+                           f"{int(wallet.balance):,}.")
+        wallet.withdraw(plan.price)
+        start, end = member.activate_subscription(plan.title, plan.duration_months)
+        pay_id = IdGenerator.tracking_id("PAY")
+        payments_list.append(Payment(username, plan.title, plan.price,
+                                     date.today().isoformat(), start, end, pay_id))
+        _record_transaction(Transaction(username, TX_SUBSCRIPTION, plan.price,
+                                        f"Subscription purchase {plan.title}", _now(), pay_id),
+                            transactions_list)
+        return True, f"Subscription {plan.title} from {start} to {end} activated. Tracking number: {pay_id}"
 
     @staticmethod
     def list_available_classes(classes_list):
-
-        if not classes_list:
-            return []
-
-        available = []
-        for c in classes_list:
-
-            active = getattr(c, 'is_active', True)
-            if callable(active):
-                active = active()
-
-            capacity = getattr(c, 'capacity', 0)
-            enrolled = len(getattr(c, 'enrolled_members', getattr(c, 'enrolled', [])))
-
-            is_full = getattr(c, 'is_full', False)
-
-            if callable(is_full):
-                is_full = is_full()
-            else:
-                is_full = bool(is_full) or (capacity > 0 and enrolled >= capacity)
-
-            if active and not is_full:
-                available.append(c)
-
-        return available
+        return [c for c in classes_list if c.is_active and not c.is_full]
 
     @staticmethod
-    @log_action('enroll_class')
+    @log_action("enroll_class")
     def enroll_class(username, class_id, users_dict, classes_list):
-
-        if not users_dict or username not in users_dict:
+        member = _get_member(username, users_dict)
+        if member is None:
             return False, "Member not found."
-
-        member = users_dict[username]
-
-        is_active_member = getattr(member, 'is_active', True)
-        if callable(is_active_member):
-            is_active_member = is_active_member()
-
-        if not is_active_member:
-            return False, "Member account is inactive."
-
-        has_subscription = getattr(member, 'has_active_subscription', None)
-        if not callable(has_subscription) or not has_subscription():
-            return False, "Member does not have an active subscription."
-
-            
-        target_class = None
-        for gym_class in classes_list or []:
-            current_id = getattr(gym_class,'id',getattr(gym_class, 'class_id', None))
-            if current_id == class_id:
-                target_class = gym_class
-                break
-
-        if target_class is None:
+        if not member.is_active:
+            return False, "Your account is inactive."
+        if not member.has_active_subscription():
+            return False, "You need an active subscription to enroll."
+        cls = next((c for c in classes_list if c.class_id == class_id), None)
+        if cls is None:
             return False, "Class not found."
-
-        class_active = getattr(target_class, 'is_active', False)
-        if callable(class_active):
-            class_active = class_active()
-
-        if not class_active:
-            return False, "Class is inactive."
-            
-        #ممبر قبلا در این کلاس ثبت نام کرده یا نه
-        registered_classes = getattr(member, 'registered_classes', [])
-        if class_id in registered_classes:
-            return False, "Member is already enrolled in this class."
-            
-        #ظرفیت کلاس پر نشده باشد
-        is_full = getattr(target_class, 'is_full', False)
-        if callable(is_full):
-            is_full = is_full()
-
-        if is_full:
-            return False, "Class is full."
-
-        #رسید ثبت نام
-        tracking_id = IdGenerator.tracking_id('ENR')
-        enrollment_date = date.today().isoformat()
-
-        enrollment = Enrollment(username, enrollment_date, tracking_id)
-
-        #ثبت رسید و اتصال به کلاس ممبر
-        if not hasattr(target_class, 'enrollments') or target_class.enrollments is None:
-            target_class.enrollments = []
-        target_class.enrollments.append(enrollment)
-
-        #کلاس آیدی را به لیست کلاس های ثبت نامی خود عضو متصل می کنم
-        if not hasattr(member, 'registered_classes') or member.registered_classes is None:
-            member.registered_classes = []
-        member.registered_classes.append(class_id)
-
-        return True, f"Enrollment successful. Tracking ID: {tracking_id}"
+        if not cls.is_active:
+            return False, "This class is inactive."
+        if cls.has_active_member(username):
+            return False, "You are already enrolled in this class."
+        if cls.is_full:
+            return False, "This class is full."
+        tracking = IdGenerator.tracking_id("ENR")
+        cls.enrollments.append(Enrollment(username, date.today().isoformat(), tracking))
+        if class_id not in member.registered_classes:
+            member.registered_classes.append(class_id)
+        return True, f"Enrolled successfully. Tracking number: {tracking}"
 
     @staticmethod
-    @log_action('cancel_class_enrollment')
+    @log_action("cancel_class_enrollment")
     def cancel_class_enrollment(username, class_id, users_dict, classes_list):
-
-        if not users_dict or username not in users_dict:
+        member = _get_member(username, users_dict)
+        if member is None:
             return False, "Member not found."
-
-        member = users_dict[username]
-
-        target_class = None
-        for gym_class in classes_list or []:
-            current_id = getattr(
-            gym_class,
-            'id',
-            getattr(gym_class, 'class_id', None)
-            )
-            if current_id == class_id:
-                target_class = gym_class
-                break
-
-        if target_class is None:
+        cls = next((c for c in classes_list if c.class_id == class_id), None)
+        if cls is None:
             return False, "Class not found."
-
-        enrollments = getattr(target_class, 'enrollments', []) or []
-
-        #رسید ثبت نام فعال اگر پیدا شد
-        active_enrollment = None
-
-        for enrollment in enrollments:
-            enrollment_username = getattr(enrollment, 'username', None)
-            is_active = getattr(enrollment, 'is_active', False)
-
-            if callable(is_active):
-                is_active= is_active()
-            # یوزر نیم مال همین کاربر باشد را چک می کنم
-            if enrollment_username == username and is_active:
-                active_enrollment = enrollment
-                break
-
-        if active_enrollment is None:
-            return False , "No active enrollment found."
-
-        #استفاده از متد کلاس enrollment
-        active_enrollment.cancel()
-
-            #برداشتن کلاس آیدی بعد از کنسل کردن ثبت نام
-        registered_classes = getattr(member, 'registered_classes', None)
-        if registered_classes is not None and class_id in registered_classes:
-            registered_classes.remove(class_id)
-
-        return True, "Class enrollment cancelled successfully."
+        enrollment = cls.get_enrollment(username)
+        if enrollment is None:
+            return False, "You have no active enrollment in this class."
+        enrollment.cancel()
+        if class_id in member.registered_classes:
+            member.registered_classes.remove(class_id)
+        return True, "Enrollment cancelled (history is kept)."
 
     @staticmethod
     def get_member_programs(username, programs_dict, classes_list):
-
-            #پیدا کردن آیدی کلاس هایی که ممبر ثبت نام داره
-        if not username or not programs_dict or not classes_list:
-            return []
-
-        active_classes_ids = set()
-
-        for gym_class in classes_list:
-            class_id = getattr(gym_class, 'id', getattr(gym_class, 'class_id', None))
-            enrollments = getattr(gym_class, 'enrollments', []) or []
-
-        
-            for enrollment in enrollments:
-                enrollment_username = getattr(enrollment, 'username', None)
-                is_active = getattr(enrollment, 'is_active', False)
-
-                if callable(is_active):
-                    is_active = is_active()
-
-                if enrollment_username == username and is_active:
-                    if class_id:
-                        active_classes_ids.add(class_id)
-                    break
-
-        if not active_classes_ids:
-            return []
-
-            # حالا کلاسایی که ثبت نام فعال داره رو توی لیست نشونش میدم
-        member_programs = []
-
-        for prog in programs_dict.values():
-            prog_user = getattr(prog, 'username', None)
-            prog_class_id = getattr(prog, 'class_id', None)
-
-            if prog_user == username and prog_class_id in active_classes_ids:
-                member_programs.append(prog)
-
-        return member_programs
-    
-
-
-            
-
-
-            
+        active_ids = {c.class_id for c in classes_list if c.has_active_member(username)}
+        return [p for p in programs_dict.values()
+                if p.member_username == username and p.class_id in active_ids]
