@@ -5,7 +5,7 @@ from utils import constants
 class Validators:
 
     @staticmethod
-    def validate_password(password):
+    def password_validate(password):
 
         if not isinstance(password, str):
             return False
@@ -18,7 +18,7 @@ class Validators:
         return bool(re.match(pattern, password))
 
     @staticmethod
-    def validate_email(email):
+    def email_validate(email):
 
         if not isinstance(email, str):
             return False
