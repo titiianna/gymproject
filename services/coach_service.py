@@ -216,17 +216,27 @@ class CoachService:
         if index < 0 or index >= len(program.exercises):
             return False, "Exercise index is out of range"
     
-        if isinstance(new_data, dict):
-            try:
-                new_exercise = Exercise.from_dict(new_data)
-            except (TypeError, ValueError, KeyError):
-                return False, "New exercise data is invalid"
-        elif isinstance(new_data, Exercise):
-            new_exercise = new_data
-        else:
-            return False, "New exercise data is invalid"
-    
+        old = program.exercises[index]
+
+        if isinstance(new_data, Exercise):
+            new_data = new_data.to_dict()
+
+        if not isinstance(new_data, dict):
+            return False, "New exercise data is invalid."
+
+        merged = old.to_dict()
+
+        for key in merged:
+            if new_data.get(key) is not None:
+                merged[key] = new_data[key]
+
+        try:
+            new_exercise = Exercise.from_dict(merged)
+        except (TypeError, ValueError, KeyError):
+            return False, "New exercise data is invalid."
+
         ok, msg = CoachService.validate_exercise(new_exercise)
+
         if not ok:
             return False, msg
     
