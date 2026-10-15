@@ -113,6 +113,10 @@ def _programs(coach, db):
         program = result[2]
 
         if ok == False:
+            print("✘ " + result[1])
+            return
+
+        if program is None:
             c = menu("This member has no program yet", ["Create program", "Back"])
             if c == 2:
                 return

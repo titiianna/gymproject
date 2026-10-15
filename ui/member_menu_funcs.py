@@ -182,3 +182,16 @@ def _cancel_class(member, db):
 
     if ok == True:
         save_all(db)
+
+
+def _show_available_classes(db):
+    rows = []
+    for c in S.list_available_classes(db["classes"]):
+        coach = db["users"].get(c.coach_username)
+        if coach != None:
+            coach_name = coach.name
+        else:
+            coach_name = c.coach_username
+        rows.append((c.title, c.sport_type, coach_name, c.hall_name,
+                     c.day, c.time, c.capacity, c.capacity_remaining))
+    show_table(["Title", "Sport", "Coach", "Hall", "Day", "Time", "Total capacity", "Remaining"], rows)

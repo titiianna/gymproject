@@ -3,7 +3,7 @@ from database import save_all
 from ui.member_menu_funcs import (
     _profile, _programs,
     _view_balance, _top_up_wallet, _view_transactions, _pay_for_plan,
-    _show_classes, _enroll_class, _cancel_class,
+    _show_classes, _show_available_classes, _enroll_class, _cancel_class,
 )
 from services.member_service import MemberService as S
 
@@ -46,7 +46,7 @@ def _classes_menu(member, db):
         c = menu("Classes", ["View classes available for enrollment", "Enroll in a class",
                             "Cancel class enrollment", "My classes", "Back"])
         if c == 1:
-            _show_classes(S.list_available_classes(db["classes"]), db)
+            _show_available_classes(db)
         elif c == 2:
             _enroll_class(member, db)
         elif c == 3:
