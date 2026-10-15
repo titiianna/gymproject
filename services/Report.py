@@ -28,11 +28,16 @@ def advanced_reports(classes_list , payments_list ):
                             income_by_plan.get (plan_title , 0 )+
                             payment.amount 
                      )
-                     
-              return{
-                "enrollments_par_class":enrollments_per_class,
-                "income_by_plan":income_by_plan,}
-       
+              top_class = None
+              for title , count in enrollments_per_class.items():
+                     if count >0 and (top_class is None or count>
+                                      enrollments_per_class[top_class]):
+                            top_class= title
+                            return {
+        "enrollments_per_class": enrollments_per_class,
+        "income_by_plan": income_by_plan,
+        "top_class": top_class,}
+
 
 
        
