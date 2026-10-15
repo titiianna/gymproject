@@ -224,3 +224,24 @@ class CoachService:
     
         program.exercises[index] = new_exercise
         return True, "حرکت با موفقیت ویرایش شد."
+    
+    @staticmethod
+    def get_program(
+        coach_username, class_id, member_username, classes_list, programs_dict
+    ):
+        """خروجی: (ok, msg, TrainingProgram | None)."""
+        class_obj = CoachService._find_class(class_id, classes_list)
+        if class_obj is None:
+            return False, "کلاس موردنظر پیدا نشد.", None
+        if getattr(class_obj, "coach_username", None) != coach_username:
+            return False, "شما اجازهٔ مشاهدهٔ برنامهٔ این کلاس را ندارید.", None
+    
+        key = CoachService._program_key(class_id, member_username)
+        program = programs_dict.get(key)
+        if program is None:
+            return True, "برای این عضو در این کلاس هنوز برنامه‌ای ثبت نشده است.", None
+        if getattr(program, "coach_username", None) != coach_username:
+            return False, "شما اجازهٔ مشاهدهٔ این برنامه را ندارید.", None
+    
+        return True, "برنامهٔ تمرینی دریافت شد.", program
+    
