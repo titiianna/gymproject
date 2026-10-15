@@ -73,4 +73,34 @@ class CoachService:
                 members.append(user)
     
             return True, "اعضای ثبت‌نام‌شدهٔ فعال دریافت شدند.", members
+    @staticmethod
+    def validate_exercise(exercise):
+        """خروجی: (ok, msg). ست/تکرار مثبت و استراحت غیرمنفی."""
+        if isinstance(exercise, dict):
+            try:
+                exercise = Exercise.from_dict(exercise)
+            except (TypeError, ValueError, KeyError):
+                return False, "اطلاعات حرکت کامل یا معتبر نیست."
     
+        required_attrs = ("name", "sets", "reps", "rest_seconds")
+        if not all(hasattr(exercise, attr) for attr in required_attrs):
+            return False, "ساختار اطلاعات حرکت معتبر نیست."
+    
+        if not str(exercise.name).strip():
+            return False, "نام حرکت نمی‌تواند خالی باشد."
+    
+        try:
+            sets = int(exercise.sets)
+            reps = int(exercise.reps)
+            rest = int(exercise.rest_seconds)
+        except (TypeError, ValueError):
+            return False, "ست، تکرار و زمان استراحت باید عدد صحیح باشند."
+    
+        if sets <= 0:
+            return False, "تعداد ست باید بزرگ‌تر از صفر باشد."
+        if reps <= 0:
+            return False, "تعداد تکرار باید بزرگ‌تر از صفر باشد."
+        if rest < 0:
+            return False, "زمان استراحت نمی‌تواند منفی باشد."
+    
+        return True, "حرکت معتبر است."
