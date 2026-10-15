@@ -150,3 +150,34 @@ class CoachService:
             exercises=valid_exercises,
         )
         return True, "برنامهٔ تمرینی با موفقیت ثبت شد."
+    
+    @staticmethod
+    def add_exercise(
+        class_id, member_username, exercise, coach_username,
+        classes_list, programs_dict
+    ):
+        """یک حرکت به برنامهٔ موجود اضافه می‌کند."""
+        class_obj = CoachService._find_class(class_id, classes_list)
+        if class_obj is None:
+            return False, "کلاس موردنظر پیدا نشد."
+        if getattr(class_obj, "coach_username", None) != coach_username:
+            return False, "فقط می‌توانید برنامهٔ کلاس‌های خودتان را تغییر دهید."
+    
+        ok, msg = CoachService.validate_exercise(exercise)
+        if not ok:
+            return False, msg
+        if isinstance(exercise, dict):
+            exercise = Exercise.from_dict(exercise)
+    
+        key = CoachService._program_key(class_id, member_username)
+        program = programs_dict.get(key)
+        if program is None:
+            return False, "برای این عضو هنوز برنامه‌ای ثبت نشده است."
+        if getattr(program, "coach_username", None) != coach_username:
+            return False, "اجازهٔ تغییر این برنامه را ندارید."
+    
+        try:
+            program.add_exercise(exercise)
+        except (TypeError, ValueError) as error:
+            return False, f"افزودن حرکت انجام نشد: {error}"
+        return True, "حرکت با موفقیت به برنامه اضافه شد."
