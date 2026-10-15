@@ -363,3 +363,10 @@ def _reports(db):
     print("Active coaches: " + str(r["active_coaches"]))
     print("Active classes: " + str(r["active_classes"]))
     print("Total income: " + format(r["total_income"], ","))
+
+    answer = ask("Show advanced reports? (y/n)", True)
+    if answer == "y" or answer == "Y":
+        a = S.advanced_reports(db["classes"], db["payments"])
+        print("Enrollments per class:", a["enrollments_per_class"])
+        print("Income by plan:", a["income_by_plan"])
+        print("Most popular class:", a["top_class"])
