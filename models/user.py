@@ -45,7 +45,7 @@ class Coach(User):
     
 
 class Member(User):
-    def __init__(self, name, username, password, email, is_active=True,subscription_status="بدون اشتراک",subscription_type=None, subscription_start=None,
+    def __init__(self, name, username, password, email, is_active=True,subscription_status="sub_none",subscription_type=None, subscription_start=None,
                  subscription_end=None, registered_classes=None,):
         super().__init__(name, username, password, email, is_active, role="member")
         self.subscription_status = subscription_status
@@ -75,7 +75,8 @@ class Member(User):
             password=data["password"],
             email=data["email"],
             is_active=data.get("is_active", True),
-            subscription_status=data.get("subscription_status", "بدون اشتراک"),
+            subscription_status=data.get("subscription_status", "sub_none"),
+            subscription_type=data.get("subscription_type"), 
             subscription_start=data.get("subscription_start"),
             subscription_end=data.get("subscription_end"),
             registered_classes=data.get("registered_classes"),
@@ -109,7 +110,8 @@ class Member(User):
             start = today
 
         end = start + timedelta(days=duration_months * DAYS_PER_MONTH)
-
+        
+        self.subscription_type = plan_title
         self.subscription_start = start.isoformat()
         self.subscription_end = end.isoformat()
         self.subscription_status = SUB_ACTIVE
