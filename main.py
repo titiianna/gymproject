@@ -6,6 +6,7 @@ from ui.coach_menu import coach_panel
 from ui.member_menu import member_panel
 from ui.helpers import ask , menu
 from ui.colors import bcolors
+from ui.helpers import ask_passwd
 
 PANELS = {ROLE_ADMIN: admin_panel, ROLE_COACH: coach_panel, ROLE_MEMBER: member_panel}
 
@@ -18,7 +19,7 @@ def login_flow(role, db):
     while True:
         username = ask("Username")
         if username != None:
-            password = ask("Password")
+            password = ask_passwd("Password")
         else:
             password = None
         if password == None:
@@ -26,11 +27,11 @@ def login_flow(role, db):
         ok, msg, user = AuthService.login(role, username, password, db["users"])
 
         if ok:
-            print(f"✔ {msg}")
+            print(bcolors.OKGREEN + f"✔ {msg}" + bcolors.ENDC)
             PANELS[role](user, db)
             return
         else:
-            print(f"✘ {msg}")
+            print(bcolors.WARNING + f"✘ {msg}" + bcolors.ENDC)
   
         c = menu("What would you like to do?", [
                     "Try again", 

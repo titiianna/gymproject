@@ -1,5 +1,5 @@
 from ui.colors import bcolors
-
+import getpass
 
 CANCEL = "/"
 
@@ -26,6 +26,15 @@ def ask(prompt, allow_empty=False):
             return value
         print("Input cannot be empty.")
 
+def ask_passwd(prompt):
+    while True:
+        pass_prompt = prompt + " (cancel: " + CANCEL + "): "
+        passwd = getpass.getpass(prompt=pass_prompt,echo_char="*").strip()
+        if passwd == CANCEL:
+            return None
+        if passwd:
+            return passwd
+        print("Password cannot be empty.")
 
 def pick(title, items, label):
     if len(items) == 0:
