@@ -303,3 +303,63 @@ def _view_classes(db):
     for x in classes:
         rows.append(_class_row(x, db))
     show_table(["ID", "Title", "Sport", "Coach", "Hall", "Time", "Total capacity", "Remaining", "Status"], rows)
+
+
+def _create_plan(db):
+    title = ask("Title")
+    months = None
+    if title != None:
+        months = ask("Duration (months)")
+    price = None
+    if months != None:
+        price = ask("Amount")
+    if price != None:
+        result = S.create_plan(title, months, price, db["plans"])
+        _done(result, db)
+
+
+def _view_plans(db):
+    plans = S.list_plans(db["plans"])
+    rows = []
+    for p in plans:
+        rows.append((p.title, p.duration_months, format(p.price, ",")))
+    show_table(["Title", "Duration (months)", "Amount"], rows)
+
+
+def _assign_plan(db):
+    members = S.list_users(db["users"], ROLE_MEMBER)
+    member = pick("Member", members, lambda u: u.name + " (" + u.username + ")")
+
+    plan = None
+    if member != None:
+        plans = S.list_plans(db["plans"])
+        plan = pick("Plan", plans, lambda p: p.title + " - " + format(p.price, ","))
+
+    if plan != None:
+        result = S.assign_subscription(member.username, plan.title, db["users"], db["plans"],
+                                       db["payments"])
+        _done(result, db)
+
+
+def _view_payments(db):
+    payments = S.list_payments(db["payments"], db["users"])
+    rows = []
+    for r in payments:
+        rows.append((r["member_name"], r["plan_title"], format(r["amount"], ","), r["payment_date"],
+                     r["start_date"], r["end_date"], r["tracking_id"]))
+    show_table(["Member", "Type", "Amount", "Payment date", "Start", "End", "Tracking number"], rows)
+
+
+def _view_subscription_statuses(db):
+    data = S.list_subscription_statuses(db["users"])
+    show_table(["Member name", "Subscription status"], data)
+    save_all(db)
+
+
+def _reports(db):
+    r = S.generate_reports(db["users"], db["classes"], db["payments"])
+    print("\n--- Reports ---")
+    print("Active members: " + str(r["active_members"]))
+    print("Active coaches: " + str(r["active_coaches"]))
+    print("Active classes: " + str(r["active_classes"]))
+    print("Total income: " + format(r["total_income"], ","))
