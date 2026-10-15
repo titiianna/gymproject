@@ -24,7 +24,8 @@ def coach_classes(coach_username, classes_list):
             coach_attr = getattr(gym_class, 'coach', None )
             c_user = getattr(coach_attr, 'username', coach_attr )
 
-        if c_user == coach_username :
+        if c_user and coach_username and str(c_user).strip().lower() == str(coach_username).strip().lower():
+
             yield gym_class
         
 def class_members(class_obj, users_dict):
