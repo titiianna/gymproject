@@ -21,5 +21,5 @@ class Enrollment:
             username = data["username"],
             date = data["date"],
             tracking_id = data["tracking_id"],
-            is_active = data["is_active"]
+            is_active = data.get("is_active", True)
         )

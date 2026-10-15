@@ -7,12 +7,12 @@ def _is_number(x):
     return isinstance(x, (int, float)) and not isinstance(x, bool)
 
 class Transaction:
-    def __init__(self,username,tx_type,amount,date,description,tracking_id):
+    def __init__(self, username, tx_type, amount, description, date, tracking_id):
         self.username=username
         self.tx_type=tx_type
         self.amount=amount
-        self.date=date
         self.description=description
+        self.date=date
         self.tracking_id=tracking_id
         
     def format_string(self):
@@ -38,7 +38,7 @@ class Wallet:
         self.balance=balance
         
     def deposit(self , amount):
-        if amount<= 0:
+        if not _is_number(amount) or amount <= 0:
             return False
         else:
             self.balance +=amount

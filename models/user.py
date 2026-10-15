@@ -45,10 +45,11 @@ class Coach(User):
     
 
 class Member(User):
-    def __init__(self, name, username, password, email, is_active=True,subscription_status="بدون اشتراک", subscription_start=None,
+    def __init__(self, name, username, password, email, is_active=True,subscription_status="بدون اشتراک",subscription_type=None, subscription_start=None,
                  subscription_end=None, registered_classes=None,):
         super().__init__(name, username, password, email, is_active, role="member")
         self.subscription_status = subscription_status
+        self.subscription_type = subscription_type
         self.subscription_start = subscription_start
         self.subscription_end = subscription_end
         self.registered_classes = ( [] if registered_classes is None else registered_classes )
@@ -59,6 +60,7 @@ class Member(User):
         data = super().to_dict()
         data.update({
             "subscription_status": self.subscription_status,
+            "subscription_type": self.subscription_type,
             "subscription_start": self.subscription_start,
             "subscription_end": self.subscription_end,
             "registered_classes": self.registered_classes,
