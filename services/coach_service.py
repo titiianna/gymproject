@@ -44,3 +44,12 @@ class CoachService:
         return CoachService._class_id(class_obj) in {
             str(value) for value in (registered_classes or [])
         }   
+        
+    @staticmethod
+    def get_coach_classes(coach_username, classes_list):
+        """فهرست کلاس‌های مربی را برمی‌گرداند."""
+        return [
+            class_obj for class_obj in classes_list
+            if getattr(class_obj, "coach_username", None) == coach_username
+            ]
+    
