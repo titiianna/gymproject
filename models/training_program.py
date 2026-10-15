@@ -51,6 +51,18 @@ class TrainingProgram:
             ],
         }
     
+    @classmethod
+    def from_dict(cls, data):
+        exercises = [
+            item if isinstance(item, Exercise) else Exercise.from_dict(item)
+            for item in data.get("exercises", [])
+        ]
+        return cls(
+            class_id=data["class_id"],
+            member_username=data["member_username"],
+            coach_username=data["coach_username"],
+            exercises=exercises,
+        )
 
 
     
