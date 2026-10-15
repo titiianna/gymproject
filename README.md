@@ -8,7 +8,7 @@
 
 ---
 
-## نمای کلی برنامه
+## ۱. نمای کلی برنامه
 
 ```mermaid
 flowchart TD
@@ -45,7 +45,126 @@ flowchart TD
     S --> Z([پایان: Goodbye!])
 ```
 
-## مسیر ذخیره‌ی اطلاعات
+---
+
+## ۲. ورود به سیستم (Login)
+
+```mermaid
+flowchart TD
+    A(["login_flow(role, db)"]) --> B["پرسیدن Username و Password"]
+    B --> C{"کاربر خالی گذاشت<br/>یا لغو کرد؟"}
+    C -- "بله" --> Z([برگشت به منوی اصلی])
+    C -- "نه" --> D["AuthService.login()"]
+    D --> E{"کاربر وجود دارد؟"}
+    E -- "نه" --> X["پیام: Incorrect username or password"]
+    E -- "بله" --> F{"نقش درست است؟"}
+    F -- "نه" --> X
+    F -- "بله" --> G{"رمز درست است؟"}
+    G -- "نه" --> X
+    G -- "بله" --> H{"حساب فعال است؟"}
+    H -- "نه" --> Y["پیام: This account is inactive"]
+    H -- "بله" --> OK["پیام: Login successful"]
+    OK --> PANEL([رفتن به پنل مربوط به نقش])
+    X --> R{"Try again یا Back؟"}
+    Y --> R
+    R -- "Try again" --> B
+    R -- "Back" --> Z
+```
+
+---
+
+## ۳. پنل ادمین (Admin)
+
+```mermaid
+flowchart TD
+    A(["Admin panel"]) --> M{"منوی ادمین"}
+    M --> U["1. Manage users"]
+    M --> H["2. Manage halls"]
+    M --> C["3. Manage classes"]
+    M --> P["4. Manage plans and payments"]
+    M --> R["5. View reports"]
+    M --> E["6. Exit"]
+
+    U --> U1["Add user<br/>Edit user<br/>Activate/deactivate<br/>View users<br/>+ خروجی txt کاربران"]
+    H --> H1["Add hall<br/>Edit hall<br/>Activate/deactivate<br/>View halls"]
+    C --> C1["Create class<br/>Edit class<br/>Activate/deactivate<br/>View classes"]
+    P --> P1["Define a new plan<br/>View plans<br/>Assign a plan to a member<br/>View payments<br/>Members' subscription status"]
+    R --> R1["اعضای فعال، مربی‌های فعال<br/>کلاس‌های فعال، کل درآمد<br/>محبوب‌ترین کلاس"]
+
+    U1 --> M
+    H1 --> M
+    C1 --> M
+    P1 --> M
+    R1 --> M
+    E --> S["save_all()"] --> Z([خروج از پنل])
+```
+
+---
+
+## ۴. پنل مربی (Coach)
+
+```mermaid
+flowchart TD
+    A(["Coach panel"]) --> M{"منوی مربی"}
+    M --> V["1. View my classes"]
+    M --> T["2. Manage members' training programs"]
+    M --> E["3. Exit"]
+
+    V --> V1["نمایش کلاس‌های مربی<br/>و اعضای ثبت‌نام‌شده"] --> M
+
+    T --> T1["انتخاب کلاس"]
+    T1 --> T2["انتخاب عضو"]
+    T2 --> T3{"عضو برنامه‌ی تمرینی دارد؟"}
+    T3 -- "نه" --> T4["Create program<br/>افزودن تمرین‌ها"]
+    T4 --> T3
+    T3 -- "بله" --> T5["View program<br/>Add exercise<br/>Edit exercise<br/>Back"]
+    T5 --> M
+
+    E --> S["save_all()"] --> Z([خروج از پنل])
+```
+
+---
+
+## ۵. پنل عضو (Member)
+
+```mermaid
+flowchart TD
+    A(["Member panel"]) --> M{"منوی عضو"}
+    M --> P1["1. Profile and subscription status"]
+    M --> P2["2. Wallet"]
+    M --> P3["3. Classes"]
+    M --> P4["4. Training program"]
+    M --> E["5. Exit"]
+
+    P1 --> P1a["نمایش نام، ایمیل، پلن،<br/>تاریخ شروع و پایان اشتراک"] --> M
+    P2 --> W["View balance<br/>Top up wallet<br/>View transactions<br/>Pay for or renew a plan"] --> M
+    P3 --> K["View classes available for enrollment<br/>Enroll in a class<br/>Cancel class enrollment<br/>My classes"] --> M
+    P4 --> T["نمایش برنامه‌ی تمرینی<br/>که مربی نوشته"] --> M
+
+    E --> S["save_all()"] --> Z([خروج از پنل])
+```
+
+---
+
+## ۶. ساختار فایل‌ها (چه کسی با چه کسی حرف می‌زند؟)
+
+```mermaid
+flowchart LR
+    main["main.py<br/>شروع برنامه"] --> ui["ui/<br/>منوها<br/>admin_menu, coach_menu,<br/>member_menu, helpers"]
+    main --> auth["services/auth_service.py<br/>ورود"]
+    main --> db["database.py<br/>خواندن/ذخیره"]
+
+    ui --> services["services/<br/>منطق کارها<br/>admin_service, coach_service,<br/>member_service"]
+    services --> models["models/<br/>شکل داده‌ها<br/>user, wallet, subscription,<br/>class_session, hall,<br/>training_program, enrollment"]
+    db --> models
+    db --> fh["utils/file_handler.py<br/>خواندن و نوشتن فایل"]
+    services --> utils["utils/<br/>validators, constants,<br/>generators, id_generator,<br/>decorators, Bank"]
+    fh --> files[("فایل‌های داده<br/>*.json و transactions.txt")]
+```
+
+---
+
+## ۷. مسیر ذخیره‌ی اطلاعات
 
 ```mermaid
 flowchart LR
