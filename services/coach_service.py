@@ -19,7 +19,28 @@ class CoachService:
     @staticmethod
     def _program_key(class_id, member_username):
         return f"{class_id}:{member_username}"
-#test change
         
+        
+    @staticmethod
+    def _is_active_member_of_class(class_obj, member_username, member):
+        has_active_member = getattr(class_obj, "has_active_member", None)
+        if callable(has_active_member):
+            try:
+                return bool(has_active_member(member_username))
+            except (TypeError, AttributeError):
+                pass
 
-   
+        enrollments = getattr(class_obj, "enrollments", None)
+        if isinstance(enrollments, dict):
+            enrollment = enrollments.get(member_username)
+            if enrollment is not None:
+                return bool(getattr(enrollment, "is_active", False))
+        elif isinstance(enrollments, (list, tuple)):
+            for enrollment in enrollments:
+                if getattr(enrollment, "username", None) == member_username:
+                    return bool(getattr(enrollment, "is_active", False))
+
+        registered_classes = getattr(member, "registered_classes", [])
+        return CoachService._class_id(class_obj) in {
+            str(value) for value in (registered_classes or [])
+        }   
