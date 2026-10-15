@@ -31,5 +31,14 @@ class TrainingProgram:
         self.member_username = str(member_username)
         self.coach_username = str(coach_username)
         self.exercises = list(exercises) if exercises is not None else []
+        
+    def add_exercise(self, exercise):
+        if not isinstance(exercise, Exercise):
+            if isinstance(exercise, dict):
+                exercise = Exercise.from_dict(exercise)
+            else:
+                raise TypeError("exercise باید از نوع Exercise یا dict باشد.")
+        self.exercises.append(exercise)
+    
 
     
