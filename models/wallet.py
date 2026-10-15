@@ -47,7 +47,7 @@ class Wallet:
 
         
     def withdraw(self , amount):
-        if amount>self.balance or amount<=0 :
+        if not _is_number(amount) or amount <= 0 or amount > self.balance:
             return False
         else:
             self.balance -= amount
