@@ -104,3 +104,49 @@ class CoachService:
             return False, "زمان استراحت نمی‌تواند منفی باشد."
     
         return True, "حرکت معتبر است."
+    
+    @staticmethod
+    def add_training_program(
+        class_id, member_username, exercises, coach_username,
+        classes_list, users_dict, programs_dict
+    ):
+        """برای عضوِ ثبت‌نام‌شده در کلاسِ خود مربی برنامه می‌سازد."""
+        class_obj = CoachService._find_class(class_id, classes_list)
+        if class_obj is None:
+            return False, "کلاس موردنظر پیدا نشد."
+    
+        if getattr(class_obj, "coach_username", None) != coach_username:
+            return False, "فقط برای کلاس‌های خودتان می‌توانید برنامه ثبت کنید."
+    
+        member = users_dict.get(member_username)
+        if member is None or getattr(member, "role", None) != "member":
+            return False, "عضو موردنظر پیدا نشد."
+        if not getattr(member, "is_active", False):
+            return False, "حساب این عضو غیرفعال است."
+    
+        if not CoachService._is_active_member_of_class(class_obj, member_username, member):
+            return False, "این عضو ثبت‌نام فعال در کلاس انتخاب‌شده ندارد."
+    
+        if not exercises:
+            return False, "برنامه باید حداقل یک حرکت داشته باشد."
+    
+        valid_exercises = []
+        for exercise in exercises:
+            ok, msg = CoachService.validate_exercise(exercise)
+            if not ok:
+                return False, msg
+            if isinstance(exercise, dict):
+                exercise = Exercise.from_dict(exercise)
+            valid_exercises.append(exercise)
+    
+        key = CoachService._program_key(class_id, member_username)
+        if key in programs_dict:
+            return False, "برای این عضو در این کلاس برنامه وجود دارد؛ از add_exercise استفاده کنید."
+    
+        programs_dict[key] = TrainingProgram(
+            class_id=class_id,
+            member_username=member_username,
+            coach_username=coach_username,
+            exercises=valid_exercises,
+        )
+        return True, "برنامهٔ تمرینی با موفقیت ثبت شد."
