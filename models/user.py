@@ -118,4 +118,12 @@ class Member(User):
 
         return self.subscription_start, self.subscription_end
 
-        
+def user_from_dict(data):
+    role = data.get("role")
+    if role == ROLE_ADMIN:
+        return Admin.from_dict(data)
+    if role == ROLE_COACH:
+        return Coach.from_dict(data)
+    if role == ROLE_MEMBER:
+        return Member.from_dict(data)
+    raise ValueError(f"Invalid role: {role}")
