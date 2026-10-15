@@ -29,7 +29,7 @@ def ask(prompt, allow_empty=False):
 def ask_passwd(prompt):
     while True:
         pass_prompt = prompt + " (cancel: " + CANCEL + "): "
-        passwd = getpass.getpass(prompt=pass_prompt,echo_char="*").strip()
+        passwd = getpass.getpass(prompt=pass_prompt).strip()
         if passwd == CANCEL:
             return None
         if passwd:
