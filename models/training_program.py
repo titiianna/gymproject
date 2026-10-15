@@ -37,7 +37,7 @@ class TrainingProgram:
             if isinstance(exercise, dict):
                 exercise = Exercise.from_dict(exercise)
             else:
-                raise TypeError("exercise باید از نوع Exercise یا dict باشد.")
+                raise TypeError("exercise must be an Exercise object or a dictionary.")
         self.exercises.append(exercise)
         
     def to_dict(self):
