@@ -39,6 +39,18 @@ class TrainingProgram:
             else:
                 raise TypeError("exercise باید از نوع Exercise یا dict باشد.")
         self.exercises.append(exercise)
+        
+    def to_dict(self):
+        return {
+            "class_id": self.class_id,
+            "member_username": self.member_username,
+            "coach_username": self.coach_username,
+            "exercises": [
+                exercise.to_dict() if isinstance(exercise, Exercise) else exercise
+                for exercise in self.exercises
+            ],
+        }
     
+
 
     
