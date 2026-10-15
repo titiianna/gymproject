@@ -55,10 +55,9 @@ def main():
             except Exception as e:
                 print(bcolors.FAIL + f"error: {e}" + bcolors.ENDC)
     except (KeyboardInterrupt):
-        print("/n/n" + bcolors.WARNING + "[KeyboardInterrupt] Interrupted by user." + bcolors.ENDC)
+        print("\n" + bcolors.WARNING + "[KeyboardInterrupt] Interrupted by user." + bcolors.ENDC)
     finally:
         database.save_all(db)
-    print("Goodbye!")
 
 
 if __name__ == "__main__":
