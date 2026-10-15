@@ -16,11 +16,13 @@ class Transaction:
         self.tracking_id=tracking_id
         
     def format_string(self):
-        return f"{self.tracking_id} | {self.username} | {self.tx_type} | {self.amount} | {self.date} | {self.description}\n"
+        return f"{self.tracking_id} | {self.username} | {self.tx_type} | {self.amount} | {self.date} | {self.description}"
         
     @classmethod
     def from_string(cls,line):
-        line_list = line.split("|")
+        line_list = [p.strip() for p in line.split("|", 5)]
+        if len(line_list) < 6:
+            return None
         return cls (
             tracking_id = line_list[0],
             username = line_list[1],
