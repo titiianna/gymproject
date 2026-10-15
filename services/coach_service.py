@@ -181,3 +181,46 @@ class CoachService:
         except (TypeError, ValueError) as error:
             return False, f"افزودن حرکت انجام نشد: {error}"
         return True, "حرکت با موفقیت به برنامه اضافه شد."
+    
+    @staticmethod
+    def edit_exercise(
+        class_id, member_username, index, new_data, coach_username,
+        classes_list, programs_dict
+    ):
+        """حرکت را با index صفرمبنا ویرایش می‌کند؛ اولین حرکت index=0 است."""
+        class_obj = CoachService._find_class(class_id, classes_list)
+        if class_obj is None:
+            return False, "کلاس موردنظر پیدا نشد."
+        if getattr(class_obj, "coach_username", None) != coach_username:
+            return False, "فقط می‌توانید برنامهٔ کلاس‌های خودتان را تغییر دهید."
+    
+        key = CoachService._program_key(class_id, member_username)
+        program = programs_dict.get(key)
+        if program is None:
+            return False, "برنامهٔ تمرینی پیدا نشد."
+        if getattr(program, "coach_username", None) != coach_username:
+            return False, "اجازهٔ تغییر این برنامه را ندارید."
+    
+        try:
+            index = int(index)
+        except (TypeError, ValueError):
+            return False, "شمارهٔ حرکت معتبر نیست."
+        if index < 0 or index >= len(program.exercises):
+            return False, "شمارهٔ حرکت خارج از محدوده است."
+    
+        if isinstance(new_data, dict):
+            try:
+                new_exercise = Exercise.from_dict(new_data)
+            except (TypeError, ValueError, KeyError):
+                return False, "اطلاعات حرکت جدید معتبر نیست."
+        elif isinstance(new_data, Exercise):
+            new_exercise = new_data
+        else:
+            return False, "اطلاعات حرکت جدید معتبر نیست."
+    
+        ok, msg = CoachService.validate_exercise(new_exercise)
+        if not ok:
+            return False, msg
+    
+        program.exercises[index] = new_exercise
+        return True, "حرکت با موفقیت ویرایش شد."
