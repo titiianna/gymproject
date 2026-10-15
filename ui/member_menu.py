@@ -1,55 +1,57 @@
+from ui.helpers import menu
 from database import save_all
+from ui.member_menu_funcs import (
+    _profile, _programs,
+    _view_balance, _top_up_wallet, _view_transactions, _pay_for_plan,
+    _show_classes, _enroll_class, _cancel_class,
+)
 from services.member_service import MemberService as S
-from ui.helpers import menu, show_table
 
 
 def member_panel(member, db):
     while True:
-        c = menu("Member panel (" + member.name + ")",
+        c = menu(f"Member panel ({member.name})",
                  ["Profile and subscription status", "Wallet", "Classes", "Training program", "Exit"])
-
         if c == 1:
-            p = S.get_profile(member.username, db["users"])
-
-            print("Name: " + str(p["name"]))
-            print("Username: " + str(p["username"]))
-            print("Email: " + str(p["email"]))
-            print("Account status: " + str(p["account_status"]))
-            print("Plan: " + str(p["subscription_type"]))
-            print("Start date: " + str(p["subscription_start"]))
-            print("End date: " + str(p["subscription_end"]))
-            print("Subscription status: " + str(p["subscription_status"]))
-
+            _profile(member, db)
         elif c == 2:
-            _wallet(member, db)
-
+            _wallet_menu(member, db)
         elif c == 3:
-            _classes(member, db)
-
+            _classes_menu(member, db)
         elif c == 4:
-            programs = S.get_member_programs(member.username, db["programs"], db["classes"])
-
-            if len(programs) == 0:
-                print("No training program has been set for you yet.")
-
-            for prog in programs:
-                cls = None
-                for x in db["classes"]:
-                    if x.class_id == prog.class_id:
-                        cls = x
-                        break
-
-                if cls != None:
-                    print("\nClass: " + cls.title)
-                else:
-                    print("\nClass: " + prog.class_id)
-
-                rows = []
-                for e in prog.exercises:
-                    rows.append((e.name, e.sets, e.reps, e.rest_seconds, e.description))
-
-                show_table(["Exercise", "Sets", "Reps", "Rest (seconds)", "Description"], rows)
-
+            _programs(member, db)
         else:
             save_all(db)
+            return
+
+
+def _wallet_menu(member, db):
+    while True:
+        c = menu("Wallet", ["View balance", "Top up wallet", "View transactions",
+                            "Pay for or renew a plan", "Back"])
+        if c == 1:
+            _view_balance(member, db)
+        elif c == 2:
+            _top_up_wallet(member, db)
+        elif c == 3:
+            _view_transactions(member, db)
+        elif c == 4:
+            _pay_for_plan(member, db)
+        else:
+            return
+
+
+def _classes_menu(member, db):
+    while True:
+        c = menu("Classes", ["View classes available for enrollment", "Enroll in a class",
+                            "Cancel class enrollment", "My classes", "Back"])
+        if c == 1:
+            _show_classes(S.list_available_classes(db["classes"]), db)
+        elif c == 2:
+            _enroll_class(member, db)
+        elif c == 3:
+            _cancel_class(member, db)
+        elif c == 4:
+            _show_classes(member, db)
+        else:
             return
