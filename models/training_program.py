@@ -24,4 +24,12 @@ class Exercise:
             rest_seconds=data.get("rest_seconds", 0),
             description=data.get("description", ""),
         )
+        
+class TrainingProgram:
+    def __init__(self, class_id, member_username, coach_username, exercises=None):
+        self.class_id = str(class_id)
+        self.member_username = str(member_username)
+        self.coach_username = str(coach_username)
+        self.exercises = list(exercises) if exercises is not None else []
+
     
