@@ -53,3 +53,24 @@ class CoachService:
             if getattr(class_obj, "coach_username", None) == coach_username
             ]
     
+    @staticmethod
+    def get_class_members(coach_username, class_id, classes_list, users_dict):
+        """خروجی: (ok, msg, list_of_members)، فقط اعضای ثبت‌نام‌شده فعال."""
+        class_obj = CoachService._find_class(class_id, classes_list)
+        if class_obj is None:
+            return False, "کلاس موردنظر پیدا نشد.", []
+    
+        if getattr(class_obj, "coach_username", None) != coach_username:
+            return False, "شما اجازهٔ دسترسی به اعضای این کلاس را ندارید.", []
+    
+        members = []
+        for username, user in users_dict.items():
+            if getattr(user, "role", None) != "member":
+                continue
+            if not getattr(user, "is_active", False):
+                continue
+            if CoachService._is_active_member_of_class(class_obj, username, user):
+                members.append(user)
+    
+            return True, "اعضای ثبت‌نام‌شدهٔ فعال دریافت شدند.", members
+    
